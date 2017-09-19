@@ -184,21 +184,35 @@ public class NGramLanguageModel implements LanguageModel {
 	}
 
 	/**
-	 * <li>计算OOV的概率  
-	 * @param nGram OOV(n > 1)
-	 * @return OOV的概率
+	 * <li> 计算OOV（a_z）概率的对数：  
+	 * <li> 如果是最大似然估计直接返回 0
+	 * <li> &emsp;如果是unigram 
+	 * <li> &emsp;&emsp;返回<unk>的概率
+	 * <li> &emsp;否则
+	 * <li>	&emsp;&emsp;如果a_存在
+	 * <li>	&emsp;&emsp;&emsp;返回bow(a_)*prob(_z)
+	 * <li>	&emsp;&emsp;否则
+	 * <li>	&emsp;&emsp;&emsp;返回prob(_z)
+	 * @param nGram 待求概率的对数的n元(a_z)
+	 * @return OOV概率的对数  
 	 */	
 	private double calcOOVLogProbability(NGram nGram) {
 		String smoothing = smooth.toLowerCase();
 
-		if(smoothing.equals("ml"))
-			return Math.log10(0);
-		else if(smoothing.equals("laplace")) {
-			if(1 == nGram.length() || !vocabulary.contains(nGram.getGram(0)))
+		if(smoothing.equals("ml")) {
+			//直接返回0
+			return 0.0;
+		}else if(smoothing.equals("laplace")) {
+			if(1 == nGram.length()) {
 				return getNGramLogProbability(PseudoWord.oovNGram);
-			
-			double prob = 1.0 / (getNGramLogBo(nGram.removeLast()) + vocabulary.size());		
-			return Math.log10(prob);
+			}else {
+				NGram n_Gram = nGram.removeLast();
+				NGram _nGram = nGram.removeFirst();
+				if(contains(n_Gram))
+					return getNGramLogBo(n_Gram) + getNGramLogProbability(_nGram);
+				else
+					return getNGramLogProbability(_nGram);
+			}
 		}else if(smoothing.equals("gt")) {
 			return getNGramLogProbability(PseudoWord.oovNGram);
 		}else if(smoothing.equals("interpolate")) {

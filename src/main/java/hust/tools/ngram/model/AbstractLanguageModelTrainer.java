@@ -2,11 +2,13 @@ package hust.tools.ngram.model;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
 import hust.tools.ngram.datastructure.ARPAEntry;
+import hust.tools.ngram.datastructure.Gram;
 import hust.tools.ngram.datastructure.NGram;
 import hust.tools.ngram.utils.GoodTuringCounts;
 import hust.tools.ngram.utils.GramSentenceStream;
@@ -53,6 +55,11 @@ public abstract class AbstractLanguageModelTrainer {
 	protected NGramCounter nGramCounter;
 	
 	/**
+	 * n元的历史后缀
+	 */
+	protected HashMap<NGram, Set<Gram>> nGramSuffix;
+	
+	/**
 	 * 双参数构造器，训练n-gram模型
 	 * @param gramStream	训练语料
 	 * @param n 			n元的最大长度
@@ -65,6 +72,7 @@ public abstract class AbstractLanguageModelTrainer {
 		this.nGramTypeCounts = new int[n];
 		this.nGramCounter = new NGramCounter(gramStream, n);
 		this.vocabulary = nGramCounter.vocabulary;
+		this.nGramSuffix = new HashMap<>();
 	}
 	
 	/**
@@ -80,6 +88,7 @@ public abstract class AbstractLanguageModelTrainer {
 		this.nGramTypeCounts = new int[n];
 		this.nGramCounter = new NGramCounter(gramSentenceStream, n);
 		this.vocabulary = nGramCounter.vocabulary;
+		this.nGramSuffix = new HashMap<>();
 	}
 	
 	/**
@@ -94,6 +103,7 @@ public abstract class AbstractLanguageModelTrainer {
 		this.nGramTypeCounts = new int[n];
 		this.nGramCounter = nGramCounter;
 		this.vocabulary = nGramCounter.vocabulary;
+		this.nGramSuffix = new HashMap<>();
 	}
 	
 	/**
@@ -119,6 +129,92 @@ public abstract class AbstractLanguageModelTrainer {
 		
 		return list.toArray(new NGram[list.size()]);
 	}
+		
+	/**
+	 * 返回给定n元的历史后缀链表 
+	 * @param nGram 待求历史后缀的n元
+	 * @return 给定n元的历史后缀链表
+	 */
+	protected Set<Gram> getNGramHistorySuffix(NGram nGram) {
+		if(nGramSuffix.containsKey(nGram))
+			return nGramSuffix.get(nGram);
+		return null;
+	}
+	
+	/**
+	 * 返回n元与其所有历史后缀组成的n+1元的数量之和
+	 * @return 总数量
+	 */
+	protected int getnGramSuffixTotalCount(NGram nGram) {
+		int total = 0;
+		Set<Gram> grams = nGramSuffix.get(nGram);
+		if(grams != null)
+			for(Gram gram : grams)
+				total += nGramCounter.getNGramCount(nGram.addLast(gram));
+		
+		return total;
+	}
+	
+	/**
+	 * 返回给定n元历史后缀的数量
+	 * @param nGram 给定n元
+	 * @return 数量
+	 */
+	protected int getHistorySuffixCount(NGram nGram) {
+		if(nGramSuffix.containsKey(nGram))
+			return nGramSuffix.get(nGram).size();
+		
+		return 0;
+	}
+	
+	/**
+	 * 统计n元的所有历史后缀
+	 */
+	protected void statisticsNGramHistorySuffix() {
+		Iterator<NGram> iterator = nGramLogProbability.keySet().iterator();
+		
+		while(iterator.hasNext()) {
+			NGram nGram = iterator.next();
+			if(nGram.length() > 1){
+				NGram n_Gram = nGram.removeLast();
+				Gram suffix = nGram.getGram(nGram.length() - 1);
+				if(nGramSuffix.containsKey(n_Gram)) {
+					nGramSuffix.get(n_Gram).add(suffix);
+				}else{
+					Set<Gram> suffix_list = new HashSet<>();
+					suffix_list.add(suffix);
+					nGramSuffix.put(n_Gram, suffix_list);
+				}//end if-else
+			}
+		}//end if
+	}
+	
+	/**
+	 * 返回给定n元的回退权重back off weight
+	 * @param nGram 待求回退权重的n元
+	 * @return		给定n元的回退权重
+	 */
+    protected double calcBOW(NGram nGram) {
+    	//例子：求w1 w2的回退权重
+    	double sum_N = 0.0;		//所有出现的以w1 w2为前缀的trigram (w1 w2 *) 的概率之和
+    	double sum_N_1 = 0.0;	//所有出现的以w1 w2为前缀的trigram (w1 w2 *) 的低阶：bigram (w2 *)的概率之和
+		
+    	Set<Gram> suffixs = getNGramHistorySuffix(nGram);
+    	if(suffixs != null) {
+			for(Gram gram : suffixs) {
+				NGram ngram = nGram.addLast(gram);
+				if(nGramLogProbability.containsKey(ngram))
+					sum_N += Math.pow(10, nGramLogProbability.get(ngram).getLog_prob());
+				
+				ngram = nGram.addLast(gram).removeFirst();
+				if(nGramLogProbability.containsKey(ngram))
+					sum_N_1 += Math.pow(10, nGramLogProbability.get(ngram).getLog_prob());
+			}
+			
+			return (1 - sum_N) / (1 - sum_N_1);
+		}else
+			return 1.0;
+    }
 	
 	/**
 	 * 使用最大似然估计计算给定n元在词汇表中的概率

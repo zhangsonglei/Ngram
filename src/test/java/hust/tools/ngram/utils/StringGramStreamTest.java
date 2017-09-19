@@ -29,7 +29,6 @@ public class StringGramStreamTest {
 	String encoding;
 	List<String> list = new ArrayList<>();
 	
-	
 	@Before
 	public void setup() throws IOException  {
 		String filePath = "files\\corpus\\testCorpus.txt";

@@ -2,6 +2,8 @@ package hust.tools.ngram.model;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map.Entry;
+
 import hust.tools.ngram.datastructure.ARPAEntry;
 import hust.tools.ngram.datastructure.NGram;
 import hust.tools.ngram.datastructure.PseudoWord;
@@ -39,17 +41,17 @@ public class LaplaceLanguageModelTrainer extends AbstractLanguageModelTrainer {
 	
 	public LaplaceLanguageModelTrainer(GramStream gramStream, int  order, double delta) throws IOException {
 		super(gramStream, order);
-		this.delta = delta > DEFAULT_DELTA ? DEFAULT_DELTA : delta;
+		this.delta = (delta > DEFAULT_DELTA || delta <= 0) ? DEFAULT_DELTA : delta;
 	}
 	
 	public LaplaceLanguageModelTrainer(GramSentenceStream gramSentenceStream, int order, double delta) throws IOException {
 		super(gramSentenceStream, order);
-		this.delta = delta > DEFAULT_DELTA ? DEFAULT_DELTA : delta;
+		this.delta = (delta > DEFAULT_DELTA || delta <= 0) ? DEFAULT_DELTA : delta;
 	}
 	
 	public LaplaceLanguageModelTrainer(NGramCounter nGramCounter, int order, double delta) {
 		super(nGramCounter, order);
-		this.delta = delta > DEFAULT_DELTA ? DEFAULT_DELTA : delta;
+		this.delta = (delta > DEFAULT_DELTA || delta <= 0) ? DEFAULT_DELTA : delta;
 	}
 
 	/**
@@ -66,13 +68,29 @@ public class LaplaceLanguageModelTrainer extends AbstractLanguageModelTrainer {
 				continue;
 			
 			double prob = calcLaplaceNGramProbability(nGram);
-			ARPAEntry entry = new ARPAEntry(Math.log10(prob), nGramCounter.getNGramCount(nGram));
+			ARPAEntry entry = new ARPAEntry(Math.log10(prob), 0.0);
 			nGramLogProbability.put(nGram, entry);
 		}
 		
 		//增加一个未登录词，计数为0
 		ARPAEntry OOVEntry = new ARPAEntry(Math.log10(calcLaplaceNGramProbability(PseudoWord.oovNGram)), 0.0);
 		nGramLogProbability.put(PseudoWord.oovNGram, OOVEntry);
+		
+		if(vocabulary.isSentence()) {
+			//给开始标签一个较小的概率
+			ARPAEntry StartEntry = new ARPAEntry(-99, 0.0);
+			nGramLogProbability.put(PseudoWord.sentStart, StartEntry);
+		}
+
+		//统计历史前缀
+		statisticsNGramHistorySuffix();
+		
+		//计算回退权重
+		for(Entry<NGram, ARPAEntry> entry : nGramLogProbability.entrySet()) {
+			NGram nGram = entry.getKey();
+			double bow = calcBOW(nGram);
+			entry.getValue().setLog_bo(Math.log10(bow));
+		}
 		
 		nGramTypeCounts = new int[n];
 		nGramTypes = new NGram[n][];
@@ -95,9 +113,12 @@ public class LaplaceLanguageModelTrainer extends AbstractLanguageModelTrainer {
 	private double calcLaplaceNGramProbability(NGram nGram) {
 		double prob = 0.0;
 		int nCount = nGramCounter.getNGramCount(nGram);
-		int M = nGramCounter.getTotalNGramCountByN(1);
 		int V = vocabulary.size();
+		int M = nGramCounter.getTotalNGramCountByN(1);
+		if(vocabulary.isSentence())
+			M -= nGramCounter.getNGramCount(PseudoWord.sentStart);
 		
+		System.out.println(M+":"+V);
 		if(0 == nGram.length() || nGram == null)
 			return prob;
 		else if(nGram.length() == 1) { 

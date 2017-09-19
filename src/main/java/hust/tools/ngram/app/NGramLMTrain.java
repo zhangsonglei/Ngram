@@ -10,7 +10,6 @@ import hust.tools.ngram.io.ObjectFileNGramModelWriter;
 import hust.tools.ngram.io.TextFileNGramModelWriter;
 import hust.tools.ngram.model.AbstractLanguageModelTrainer;
 import hust.tools.ngram.model.AbstractNGramModelWriter;
-import hust.tools.ngram.model.GoodTuringLanguageModelTrainer;
 import hust.tools.ngram.model.InterpolationLanguageModelTrainer;
 import hust.tools.ngram.model.KatzLanguageModelTrainer;
 import hust.tools.ngram.model.KneserNeyLanguageModelTrainer;
@@ -134,15 +133,12 @@ public class NGramLMTrain {
 			break;
 		case "laplace":
 			trainer = new LaplaceLanguageModelTrainer(nGramCounter, order);
-			break;	
-		case "gt":
-			trainer = new GoodTuringLanguageModelTrainer(nGramCounter, order);
-			break;	
-		case "interpolate":
-			trainer = new InterpolationLanguageModelTrainer(nGramCounter, order);
 			break;
 		case "katz":
 			trainer = new KatzLanguageModelTrainer(nGramCounter, order);
+			break;
+		case "interpolate":
+			trainer = new InterpolationLanguageModelTrainer(nGramCounter, order);
 			break;
 		case "kn":
 			trainer = new KneserNeyLanguageModelTrainer(nGramCounter, order);
@@ -164,9 +160,7 @@ public class NGramLMTrain {
 	 * 			   [5]-模型文件的路径, [6]-模型文件的类型(文本文件text/二进制文件binary/序列化文件object)
 	 * @throws IOException
 	 */
-	public static void main(String[] args) throws IOException {
-		long start = System.currentTimeMillis();
-		
+	public static void main(String[] args) throws IOException {		
 		int len = args.length;
 		if(7 != len) {
 			System.err.println("错误的参数个数："+len+
@@ -192,10 +186,6 @@ public class NGramLMTrain {
 				GramStream stream = new StringGramStream(args[0], args[1]);
 				getModelFile(stream, order, args[4], args[5], type);
 			}
-		}
-		
-		long end = System.currentTimeMillis();
-		
-		System.out.println(end - start+"ms");
+		}		
 	}
 }

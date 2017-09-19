@@ -1,13 +1,8 @@
 package hust.tools.ngram.model;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
-
 import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.Gram;
 import hust.tools.ngram.datastructure.NGram;
 import hust.tools.ngram.datastructure.PseudoWord;
 import hust.tools.ngram.utils.GoodTuringCounts;
@@ -29,11 +24,6 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	 */
 	private GoodTuringCounts countOfCounts;
 	
-	/**
-	 * n元的历史后缀
-	 */
-	private HashMap<NGram, Set<Gram>> nGramSuffix;
-	
 	public KneserNeyLanguageModelTrainer(GramStream gramStream, int  n) throws IOException {
 		super(gramStream, n);
 	}
@@ -53,8 +43,6 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	 */
 	@Override
 	public NGramLanguageModel trainModel() {
-		nGramSuffix = new HashMap<>();
-		statisticsNGramHistory(nGramCounter);
 		countOfCounts = new GoodTuringCounts(nGramCounter.getNGramCountMap(), n);
 		
 		Iterator<NGram> iterator = nGramCounter.iterator();
@@ -82,6 +70,8 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 		}
 		ARPAEntry entry = new ARPAEntry(Math.log10(1.0 / nGramCounter.getTotalNGramCountByN(1)), 0.0);
 		nGramLogProbability.put(PseudoWord.oovNGram, entry);		
+		
+		statisticsNGramHistorySuffix();
 		
 		nGramTypeCounts = new int[n];
 		nGramTypes = new NGram[n][];
@@ -144,56 +134,5 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 		double n2 = countOfCounts.getNr(2, order);
 
 		return n1 / (n1 + 2.0 * n2);
-	}
-	
-	/**
-	 * 统计n元的历史前后缀的类型
-	 * @param nGram
-	 */
-	private void statisticsNGramHistory(NGramCounter nGramCounter) {
-		Iterator<NGram> iterator = nGramCounter.iterator();
-		
-		while(iterator.hasNext()) {
-			NGram nGram = iterator.next();
-			
-			if(nGram.length() > 1){
-				//统计历史后缀
-				NGram n_Gram = nGram.removeLast();
-				Gram suffix = nGram.getGram(nGram.length() - 1);
-				if(nGramSuffix.containsKey(n_Gram)) {
-					nGramSuffix.get(n_Gram).add(suffix);
-				}else{
-					Set<Gram> suffix_list = new HashSet<>();
-					suffix_list.add(suffix);
-					nGramSuffix.put(n_Gram, suffix_list);
-				}
-			}
-		}
-	}
-
-	/**
-	 * 返回给定n元历史后缀的数量
-	 * @param nGram 给定n元
-	 * @return 数量
-	 */
-	private int getHistorySuffixCount(NGram nGram) {
-		if(nGramSuffix.containsKey(nGram))
-			return nGramSuffix.get(nGram).size();
-		
-		return 0;
-	}
-	
-	/**
-	 * 返回n元与其所有历史后缀组成的n+1元的数量之和
-	 * @return 总数量
-	 */
-	private int getnGramSuffixTotalCount(NGram nGram) {
-		int total = 0;
-		Set<Gram> grams = nGramSuffix.get(nGram);
-		if(grams != null)
-			for(Gram gram : grams)
-				total += nGramCounter.getNGramCount(nGram.addLast(gram));
-		
-		return total;
 	}
 }

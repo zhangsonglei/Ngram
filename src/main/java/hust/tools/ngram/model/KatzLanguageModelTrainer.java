@@ -1,8 +1,6 @@
 package hust.tools.ngram.model;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,11 +28,6 @@ public class KatzLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	 */
 	private GoodTuringCounts goodTuringCounts;
 	
-	/**
-	 * n元的历史后缀
-	 */
-	private HashMap<NGram, Set<Gram>> nGramSuffix;
-	
 	public KatzLanguageModelTrainer(GramStream gramStream, int  n) throws IOException {
 		super(gramStream, n);
 	}
@@ -54,9 +47,8 @@ public class KatzLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	 */
 	@Override
 	public NGramLanguageModel trainModel() {
-		nGramSuffix = new HashMap<>();
 		goodTuringCounts = new GoodTuringCounts(nGramCounter.getNGramCountMap(), n);
-		statisticsNGramHistorySuffix();
+
 		Iterator<NGram> iterator = nGramCounter.iterator();
 		while(iterator.hasNext()) {
 			NGram nGram = iterator.next();
@@ -142,39 +134,39 @@ public class KatzLanguageModelTrainer extends AbstractLanguageModelTrainer{
 			
 			return (1 - numerator) / (1 - denominator);
 		}else
-			return 0.0;
+			return 1.0;
 	}
 	
-	/**
-	 * 返回给定n元的历史后缀链表 
-	 * @param nGram 待求历史后缀的n元
-	 * @return 给定n元的历史后缀链表
-	 */
-	private Set<Gram> getNGramHistorySuffix(NGram nGram) {
-		if(nGramSuffix.containsKey(nGram))
-			return nGramSuffix.get(nGram);
-		return null;
-	}
-	
-	/**
-	 * 统计n元的历史后缀的类型
-	 */
-	private void statisticsNGramHistorySuffix() {
-		Iterator<NGram> iterator = nGramCounter.iterator();
-		
-		while(iterator.hasNext()) {
-			NGram nGram = iterator.next();
-			NGram n_Gram = nGram.removeLast();
-			if(nGram.length() > 1){
-				Gram suffix = nGram.getGram(nGram.length() - 1);
-				if(nGramSuffix.containsKey(n_Gram)) {
-					nGramSuffix.get(n_Gram).add(suffix);
-				}else{
-					Set<Gram> suffix_list = new HashSet<>();
-					suffix_list.add(suffix);
-					nGramSuffix.put(n_Gram, suffix_list);
-				}//end if-else
-			}
-		}//end if
-	}
+//	/**
+//	 * 返回给定n元的历史后缀链表 
+//	 * @param nGram 待求历史后缀的n元
+//	 * @return 给定n元的历史后缀链表
+//	 */
+//	protected Set<Gram> getNGramHistorySuffix(NGram nGram) {
+//		if(nGramSuffix.containsKey(nGram))
+//			return nGramSuffix.get(nGram);
+//		return null;
+//	}
+//	
+//	/**
+//	 * 统计n元的历史后缀的类型
+//	 */
+//	protected void statisticsNGramHistorySuffix() {
+//		Iterator<NGram> iterator = nGramCounter.iterator();
+//		
+//		while(iterator.hasNext()) {
+//			NGram nGram = iterator.next();
+//			NGram n_Gram = nGram.removeLast();
+//			if(nGram.length() > 1){
+//				Gram suffix = nGram.getGram(nGram.length() - 1);
+//				if(nGramSuffix.containsKey(n_Gram)) {
+//					nGramSuffix.get(n_Gram).add(suffix);
+//				}else{
+//					Set<Gram> suffix_list = new HashSet<>();
+//					suffix_list.add(suffix);
+//					nGramSuffix.put(n_Gram, suffix_list);
+//				}//end if-else
+//			}
+//		}//end if
+//	}
 }

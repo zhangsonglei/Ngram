@@ -18,9 +18,7 @@ import hust.tools.ngram.utils.GramStream;
 public class Vocabulary {
 	
 	private HashSet<Gram> vocabulary;
-	
-	private boolean isSentence = false;
-	
+		
 	public Vocabulary() {
 		this.vocabulary = new HashSet<>();
 		add(PseudoWord.oov);
@@ -34,15 +32,18 @@ public class Vocabulary {
 	
 	public Vocabulary(GramSentenceStream vocab) throws IOException {
 		this.vocabulary = new HashSet<>();
-		this.isSentence = true;
 		establishVocab(vocab);
 		add(PseudoWord.oov);
 	}
 	
-	public Vocabulary(Gram[] vocab) {
+	public Vocabulary(Gram[] vocab, boolean isSentence) {
 		this.vocabulary = new HashSet<>();
 		establishVocab(vocab);
 		add(PseudoWord.oov);
+	}
+	
+	public boolean isSentence(){
+		return contains(PseudoWord.Start) && contains(PseudoWord.End) ? true :false;
 	}
 	
 	/**
@@ -59,9 +60,7 @@ public class Vocabulary {
 	 * @return 字典的大小
 	 */
 	public int size() {
-		if(isSentence)
-			return vocabulary.size() - 1;
-		return vocabulary.size();
+		return isSentence() ? vocabulary.size() - 1 : vocabulary.size();
 	}
 
 	/**
@@ -98,8 +97,8 @@ public class Vocabulary {
 				if(!vocabulary.contains(gram))
 					add(gram);
 		}
-		add(PseudoWord.sentEnd);
-		add(PseudoWord.sentStart);
+		add(PseudoWord.End);
+		add(PseudoWord.Start);
 	}
 
 	/**

@@ -253,10 +253,10 @@ public class NGramCounter {
 		Gram[] grams = null;
 		while((grams = gramSentenceStream.next())!=null) {
 			Gram[] sentence = new Gram[grams.length + 2];
-			sentence[0] = PseudoWord.sentStart;
+			sentence[0] = PseudoWord.Start;
 			for(int i = 0; i < grams.length; i++)
 				sentence[i + 1] = grams[i];
-			sentence[0] = PseudoWord.sentEnd;
+			sentence[grams.length + 1] = PseudoWord.End;
 			statisticsNGram(sentence);
 		}
 	}

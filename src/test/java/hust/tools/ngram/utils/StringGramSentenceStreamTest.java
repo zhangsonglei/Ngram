@@ -57,13 +57,15 @@ public class StringGramSentenceStreamTest {
 		int index = 0;
 		while((grams = sGramStream.next()) != null) {
 			String[] strings = list.get(index++).replaceAll("\\s+", "").split("");
-			assertEquals(grams.length, strings.length+2);
+			assertEquals(grams.length, strings.length);
 
-			assertEquals(grams[0], new StringGram("<S>"));
-			assertEquals(grams[grams.length - 1], new StringGram("</S>"));
-			
+//			assertEquals(grams[0], new StringGram("<S>"));
+//			assertEquals(grams[grams.length - 1], new StringGram("</S>"));
+//			
+//			for(int i = 0; i < strings.length; i++)
+//				assertEquals(grams[i+1], new StringGram(strings[i]));
 			for(int i = 0; i < strings.length; i++)
-				assertEquals(grams[i+1], new StringGram(strings[i]));
+				assertEquals(grams[i], new StringGram(strings[i]));
 		}
 		
 		assertEquals(index, list.size());	

@@ -31,7 +31,7 @@ public class StringGramSentenceStream extends AbstractGramSentenceStream {
 			String[] strings = line.split("");
 			Gram[] grams = new Gram[strings.length];
 			
-			for(int j = 0; j <= strings.length; j++) 
+			for(int j = 0; j < strings.length; j++) 
 				grams[j] = new StringGram(strings[j]);
 			
 			list.add(grams);
