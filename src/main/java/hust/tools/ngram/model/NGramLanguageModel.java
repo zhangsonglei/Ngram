@@ -202,7 +202,12 @@ public class NGramLanguageModel implements LanguageModel {
 		if(smoothing.equals("ml")) {
 			//直接返回0
 			return 0.0;
-		}else if(smoothing.equals("laplace")) {
+		}else if(smoothing.equals("interpolate")) {
+			if(1 == nGram.length())
+				return getNGramLogProbability(PseudoWord.oovNGram);
+			
+			return getNGramLogProbability(nGram.removeFirst());
+		}else {
 			if(1 == nGram.length()) {
 				return getNGramLogProbability(PseudoWord.oovNGram);
 			}else {
@@ -213,22 +218,7 @@ public class NGramLanguageModel implements LanguageModel {
 				else
 					return getNGramLogProbability(_nGram);
 			}
-		}else if(smoothing.equals("gt")) {
-			return getNGramLogProbability(PseudoWord.oovNGram);
-		}else if(smoothing.equals("interpolate")) {
-			if(1 == nGram.length())
-				return getNGramLogProbability(PseudoWord.oovNGram);
-			
-			return getNGramLogProbability(nGram.removeFirst());
-		}else if(smoothing.equals("katz") || smoothing.equals("kn")) {
-			if(1 == nGram.length())
-				return getNGramLogProbability(PseudoWord.oovNGram);
-
-			double log_prob = getNGramLogBo(nGram.removeLast()) + getNGramLogProbability(nGram.removeFirst());
-			
-			return log_prob;
-		}else
-			throw new RuntimeException("模型的平滑方法有误");
+		}
 	}
 	
 	/**

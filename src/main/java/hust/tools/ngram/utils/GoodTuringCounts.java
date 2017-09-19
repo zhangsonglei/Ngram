@@ -18,6 +18,8 @@ import hust.tools.ngram.datastructure.NGram;
  */
 public class GoodTuringCounts {
 	
+	private int n;
+	
 	/**
 	 * 折扣阈值
 	 */
@@ -71,9 +73,10 @@ public class GoodTuringCounts {
 	}
 	
 	public GoodTuringCounts(HashMap<NGram, Integer> nGramCountMap, int n) {
-		countOfCounts = new HashMap<>();
-		disCoeffs = new double[n][maxK];
-		statisticsNGramCountOfTimesSeen(n, nGramCountMap);
+		this.n = n;
+		this.countOfCounts = new HashMap<>();
+		this.disCoeffs = new double[n][maxK];
+		statisticsNGramCountOfTimesSeen(nGramCountMap);
 //		for(int i = 0; i < n; i++) {
 //			for(int j = 0; j < maxK; j++)
 //				System.out.print(disCoeffs[i][j]+"\t");
@@ -88,8 +91,7 @@ public class GoodTuringCounts {
 	 * @param nGramCountMap	n元及其计数的索引
 	 * @return				根据n的大小统计出现r次的n元的数量
 	 */
-	private void statisticsNGramCountOfTimesSeen(int n, 
-			HashMap<NGram, Integer> nGramCountMap) {
+	private void statisticsNGramCountOfTimesSeen(HashMap<NGram, Integer> nGramCountMap) {
 		for(Entry<NGram, Integer> entry : nGramCountMap.entrySet()) {
 			NGram nGram = entry.getKey();
 			int order = nGram.length();
@@ -111,10 +113,10 @@ public class GoodTuringCounts {
 			
 		}//end for
 		
-		processCountOfCount(n, countOfCounts);
+		processCountOfCount();
 		
 		for(int i = 1; i <= n; i++) {
-			//计算n元出现次数0-7的折扣系数
+			//计算n元出现次数0-maxK的折扣系数
 			double coeff = 0.0;
 			
 			double commonTerm = (maxK + 1) * countOfCounts.get(maxK + 1).get(i) / countOfCounts.get(1).get(i);
@@ -139,22 +141,24 @@ public class GoodTuringCounts {
 	 * @param nGramCountOfTimesSeen n元出现次数r的数量
 	 * @param n 最大n元长度
 	 */
-	private void processCountOfCount(int n,
-			HashMap<Integer, HashMap<Integer, Double>> countOfCount){
+	private void processCountOfCount(){
 		for(int i = 1; i <= n; i++) {
 			HashMap<Integer, Double> map = new HashMap<>();
 			int max_r = 0;
-			for(Entry<Integer, HashMap<Integer, Double>> entry : countOfCount.entrySet()) {
+			for(Entry<Integer, HashMap<Integer, Double>> entry : countOfCounts.entrySet()) {
 				int r = entry.getKey();
-				double Nr = entry.getValue().get(i);
-				if(countOfCount.get(r).containsKey(i)) {
-					max_r = max_r > entry.getKey() ? max_r : entry.getKey();
-					map.put(r, Nr);
-				}
-			}
-						
+				if(entry.getValue().containsKey(i)) {
+					double Nr = entry.getValue().get(i);
+					if(countOfCounts.get(r).containsKey(i)) {
+						max_r = max_r > entry.getKey() ? max_r : entry.getKey();
+						map.put(r, Nr);
+					}
+				}//end if
+			}//end for
+
 			if(map.size() < 2) {
 				System.err.println("训练语料过少,无法使用GoodTuring折扣");
+				System.err.println(i+"gram:\n"+map);
 				System.exit(0);
 			}
 			
@@ -164,16 +168,16 @@ public class GoodTuringCounts {
 			/**
 			 * 防止训练语料过少，最大次数不足maxK
 			 */
-			if(max_r < maxK + 1) {
+			if(max_r < maxK + 2) {
 				for(int r = 1; r < maxK + 2; r++) {
 					double Nr = Math.pow(10, parameters[0] + parameters[1] * Math.log10(r));
-					if(countOfCount.containsKey(r))
-						if(!countOfCount.get(r).containsKey(i))
-							countOfCount.get(r).put(i, Nr);
-					else {
+					if(countOfCounts.containsKey(r)) {
+						if(!countOfCounts.get(r).containsKey(i))
+							countOfCounts.get(r).put(i, Nr);
+					}else {
 						HashMap<Integer, Double> tempMap = new HashMap<>();
 						tempMap.put(i, Nr);
-						countOfCount.put(r, tempMap);
+						countOfCounts.put(r, tempMap);
 					}
 				}
 			}

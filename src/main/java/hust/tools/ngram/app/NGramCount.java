@@ -3,6 +3,7 @@ package hust.tools.ngram.app;
 import java.io.File;
 import java.io.IOException;
 
+import hust.tools.ngram.datastructure.PseudoWord;
 import hust.tools.ngram.io.BinaryFileNGramCountWriter;
 import hust.tools.ngram.io.NGramCountWriter;
 import hust.tools.ngram.io.ObjectFileNGramCountWriter;
@@ -48,6 +49,9 @@ public class NGramCount {
 	 */
 	public static void getCounterFile(GramSentenceStream stream, int order, String countFile, String type) throws IOException {
 		NGramCounter counter = new NGramCounter(stream, order);
+		System.out.println("V :"+counter.getNGramTypeCountByN(1));
+		System.out.println("M :"+counter.getTotalNGramCountByN(1));
+		System.out.println("<s>: "+counter.getNGramCount(PseudoWord.sentStart));
 		writeCounter(counter, countFile, type);
 	}
 	

@@ -72,7 +72,7 @@ public class LaplaceLanguageModelTrainer extends AbstractLanguageModelTrainer {
 			nGramLogProbability.put(nGram, entry);
 		}
 		
-		//增加一个未登录词，计数为0
+		//增加一个未登录词<unk>，计数为0
 		ARPAEntry OOVEntry = new ARPAEntry(Math.log10(calcLaplaceNGramProbability(PseudoWord.oovNGram)), 0.0);
 		nGramLogProbability.put(PseudoWord.oovNGram, OOVEntry);
 		

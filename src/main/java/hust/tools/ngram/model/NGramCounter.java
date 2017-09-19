@@ -62,36 +62,6 @@ public class NGramCounter {
 	 */
 	protected Vocabulary vocabulary;
 	
-	/**
-	 * 统计所有的n元的数量
-	 * @param gramSentenceStream 元组流，从中读取句子
-	 * @param n	n元的大小
-	 * @throws IOException
-	 */
-	public NGramCounter(GramSentenceStream gramSentenceStream, int n) throws IOException {
-		this.n = n;
-		this.nGramCountMap = new HashMap<>();
-		this.nGramCounts = new int[n];
-		this.nGramTypes = new NGram[n][];
-		this.totalNGramCount = 0;
-		this.vocabulary = new Vocabulary();
-		statisticsSentenceNGram(gramSentenceStream);
-	}
-	
-	/**
-	 * 统计所有的n元的数量
-	 * @param grams 元数组，从中统计n元
-	 * @param n n元的大小
-	 */
-	public NGramCounter(Gram[] grams, int n) {
-		this.n = n;
-		this.nGramCountMap = new HashMap<>();
-		this.nGramCounts = new int[n];
-		this.nGramTypes = new NGram[n][];
-		this.totalNGramCount = 0;
-		this.vocabulary = new Vocabulary();
-		statisticsNGram(grams);
-	}
 	
 	/**
 	 * 初始化当前实例
@@ -107,6 +77,39 @@ public class NGramCounter {
 		this.totalNGramCount = 0;
 		this.vocabulary = new Vocabulary();
 		statisticsNGram(gramStream);		
+		statisticsNGramsTypes();
+	}
+	
+	/**
+	 * 统计所有的n元的数量
+	 * @param gramSentenceStream 元组流，从中读取句子
+	 * @param n	n元的大小
+	 * @throws IOException
+	 */
+	public NGramCounter(GramSentenceStream gramSentenceStream, int n) throws IOException {
+		this.n = n;
+		this.nGramCountMap = new HashMap<>();
+		this.nGramCounts = new int[n];
+		this.nGramTypes = new NGram[n][];
+		this.totalNGramCount = 0;
+		this.vocabulary = new Vocabulary();
+		statisticsSentenceNGram(gramSentenceStream);
+		statisticsNGramsTypes();
+	}
+	
+	/**
+	 * 统计所有的n元的数量
+	 * @param grams 元数组，从中统计n元
+	 * @param n n元的大小
+	 */
+	public NGramCounter(Gram[] grams, int n) {
+		this.n = n;
+		this.nGramCountMap = new HashMap<>();
+		this.nGramCounts = new int[n];
+		this.nGramTypes = new NGram[n][];
+		this.totalNGramCount = 0;
+		this.vocabulary = new Vocabulary();
+		statisticsNGram(grams);
 		statisticsNGramsTypes();
 	}
 	
@@ -271,13 +274,11 @@ public class NGramCounter {
 			totalNGramCount += nGrams.size();
 			nGramCounts[i - 1] += nGrams.size();
 			
-			List<NGram> list = new ArrayList<>();
 			for(NGram nGram : nGrams) {
 				if(nGramCountMap.containsKey(nGram)) {
 					int count = nGramCountMap.get(nGram);
 					nGramCountMap.put(nGram, count + 1);
 				}else {	
-					list.add(nGram);
 					nGramCountMap.put(nGram, 1);
 					
 					//建立字典
@@ -285,9 +286,7 @@ public class NGramCounter {
 					for(Gram gram : temp)
 						vocabulary.add(gram);
 				}
-			}//end for(nGram)
-			
-			nGramTypes[i - 1] = list.toArray(new NGram[list.size()]);
+			}//end for(nGram)		
 		}//end for(i)
 	}
 		

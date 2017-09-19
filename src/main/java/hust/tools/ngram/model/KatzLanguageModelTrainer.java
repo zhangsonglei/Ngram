@@ -57,24 +57,29 @@ public class KatzLanguageModelTrainer extends AbstractLanguageModelTrainer{
 			
 			double prob = calcGoodTuringNGramProbability(nGram, nGramCounter, goodTuringCounts);
 			ARPAEntry entry = new ARPAEntry(Math.log10(prob), 0.0);
-			
 			nGramLogProbability.put(nGram, entry);
 		}
 		
+		//增加一个未登录词<unk>，计数为1
+		double prob = 1 * goodTuringCounts.getDiscountCoeff(1, 1) / nGramCounter.getTotalNGramCountByN(1);
+		ARPAEntry OOVEntry = new ARPAEntry(Math.log10(prob), 0.0);
+		nGramLogProbability.put(PseudoWord.oovNGram, OOVEntry);
+		
+		if(vocabulary.isSentence()) {
+			//给开始标签一个较小的概率
+			ARPAEntry StartEntry = new ARPAEntry(-99, 0.0);
+			nGramLogProbability.put(PseudoWord.sentStart, StartEntry);
+		}
+
+		//统计历史前缀
+		statisticsNGramHistorySuffix();
+		
+		//计算回退权重
 		for(Entry<NGram, ARPAEntry> entry : nGramLogProbability.entrySet()) {
 			NGram nGram = entry.getKey();
-			if(nGram.length() > 1) {
-				NGram n_Gram = nGram.removeLast();
-				double alpha = calcAlpha(n_Gram);
-				
-				if(alpha > 0.0)
-					nGramLogProbability.get(n_Gram).setLog_bo(Math.log10(alpha));
-			}			
+			double bow = calcBOW(nGram);
+			entry.getValue().setLog_bo(Math.log10(bow));
 		}
-		
-		double prob = 1.0 / nGramCounter.getTotalNGramCountByN(1);
-		ARPAEntry entry = new ARPAEntry(Math.log10(prob), 0.0);
-		nGramLogProbability.put(PseudoWord.oovNGram, entry);
 		
 		nGramTypeCounts = new int[n];
 		nGramTypes = new NGram[n][];
