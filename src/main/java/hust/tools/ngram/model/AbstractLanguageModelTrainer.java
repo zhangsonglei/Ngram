@@ -10,7 +10,6 @@ import java.util.Set;
 import hust.tools.ngram.datastructure.ARPAEntry;
 import hust.tools.ngram.datastructure.Gram;
 import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.utils.GoodTuringCounts;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
 
@@ -234,29 +233,5 @@ public abstract class AbstractLanguageModelTrainer {
 			prob = (double)nCount / nGramCounter.getNGramCount(nGram.removeLast());
 
 		return prob;
-	}
-	
-	/**
-	 * 使用Good Turing平滑算法计算给定ngram在词汇表中的概率
-	 * @param nGram					待计算概率的n元
-	 * @param nGramCount			n元的计数
-	 * @return						Good Turing平滑概率			
-	 */
-	protected double calcGoodTuringNGramProbability(NGram nGram, NGramCounter nGramCounter, GoodTuringCounts goodTuringCounts) {
-		int n = nGram.length();
-		if(n > 0) {
-			int count = nGramCounter.getNGramCount(nGram);
-			double prob = 0.0;
-			double gtCount = 0.0;
-			
-			gtCount = goodTuringCounts.getDiscountCoeff(count, n) * count;
-			if(n > 1) {
-				prob =  gtCount / nGramCounter.getNGramCount(nGram.removeLast());
-			}else
-				prob = gtCount / nGramCounter.getTotalNGramCountByN(1);
-
-			return prob;
-		}else
-			throw new RuntimeException("n元组不合法："+nGram);
 	}
 }

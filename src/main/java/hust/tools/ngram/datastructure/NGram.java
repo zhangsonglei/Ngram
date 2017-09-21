@@ -65,6 +65,17 @@ public class NGram implements Comparable<NGram>, Serializable{
 	}
 
 	/**
+	 * 返回nGram除边界的剩余(n-2)Gram ,nGram长度小于3的返回null
+	 * @param nGram	待切割的n元
+	 * @return		nGram除边界的剩余(n-2)Gram ,nGram长度小于3的返回null
+	 */
+	public NGram getSubNGramRemovedBoundary(NGram nGram) {
+		if(nGram.length() > 2)
+			return nGram.removeFirst().removeLast();
+		return null;
+	}
+	
+	/**
 	 * <li> 删除n元的第一位 
 	 * @param ngram 待删除的n元
 	 * @return 删除后第一位后的n元

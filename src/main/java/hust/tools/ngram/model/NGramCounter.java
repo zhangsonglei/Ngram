@@ -202,6 +202,23 @@ public class NGramCounter {
 		else
 			return 0;
 	}
+	
+	/**
+	 * 更新n元的计数
+	 * @param nGram	待更新计数的n元
+	 * @param count	更新后的计数
+	 */
+	public void setNGramCount(NGram nGram, int count) {
+		int temp = 0;
+		if(nGramCountMap.containsKey(nGram))
+			temp = count - getNGramCount(nGram);
+		else
+			temp = count;
+		
+		nGramCountMap.put(nGram, count);
+		
+		nGramCounts[nGram.length() - 1] += temp;
+	}
 
 	/**
 	 * 返回所有n元的总数

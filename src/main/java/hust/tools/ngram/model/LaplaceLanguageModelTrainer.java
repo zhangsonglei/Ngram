@@ -12,7 +12,7 @@ import hust.tools.ngram.utils.GramStream;
 
 /**
  *<ul>
- *<li>Description: 使用Laplace平滑方法训练模型
+ *<li>Description: 使用加法平滑方法训练模型，默认是加一平滑， 0 < delta <= 1.0
  *<li>Company: HUST
  *<li>@author Sonly
  *<li>Date: 2017年8月20日
@@ -118,7 +118,6 @@ public class LaplaceLanguageModelTrainer extends AbstractLanguageModelTrainer {
 		if(vocabulary.isSentence())
 			M -= nGramCounter.getNGramCount(PseudoWord.sentStart);
 		
-		System.out.println(M+":"+V);
 		if(0 == nGram.length() || nGram == null)
 			return prob;
 		else if(nGram.length() == 1) { 

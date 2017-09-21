@@ -1,11 +1,13 @@
 package hust.tools.ngram.model;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map.Entry;
+
 import hust.tools.ngram.datastructure.ARPAEntry;
 import hust.tools.ngram.datastructure.NGram;
 import hust.tools.ngram.datastructure.PseudoWord;
-import hust.tools.ngram.utils.GoodTuringCounts;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
 
@@ -22,7 +24,22 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	/**
 	 * n元出现频率的频率（出现r次的n元的个数）
 	 */
-	private GoodTuringCounts countOfCounts;
+	private HashMap<Integer, HashMap<Integer, Integer>> countOfCounts;
+	
+	/**
+	 * 历史前缀数量，所有的*(n-1)Gram数量
+	 */
+	private HashMap<NGram, Integer> prefixCount;
+	
+	/**
+	 * 历史接续数量 ,所有的*(n-2Gram)*的类型数
+	 */
+	private HashMap<NGram, Integer> continuationCount;
+	
+	/**
+	 * 不同长度的n元的折扣系数
+	 */
+	private double[] dicountCoeff;
 	
 	public KneserNeyLanguageModelTrainer(GramStream gramStream, int  n) throws IOException {
 		super(gramStream, n);
@@ -43,35 +60,78 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	 */
 	@Override
 	public NGramLanguageModel trainModel() {
-		countOfCounts = new GoodTuringCounts(nGramCounter.getNGramCountMap(), n);
+		prefixCount = new HashMap<>();
+		continuationCount = new HashMap<>();
+		countOfCounts = new HashMap<>();
+		dicountCoeff = new double[n];
+		statisticsNGramHistory();
+		calcDiscount();
 		
 		Iterator<NGram> iterator = nGramCounter.iterator();
-		while(iterator.hasNext()) {
+		//对于最高阶直接使用原始计数计算平滑概率
+		while(iterator.hasNext()) { 
 			NGram nGram = iterator.next();
-			int order = nGram.length();
-			if(order > 2 && nGramCounter.getNGramCount(nGram) < 2)//高阶(n > 2)n元组计数小于2 的忽略
+			if(nGram.length() != n || (nGram.length() > 2 && nGramCounter.getNGramCount(nGram) < 2))	//n > 2的n元组若计数为1 直接忽略
 				continue;
 			
 			double prob = calcKNNGramProbability(nGram);
-			double logBo = 0.0;
-			if(prob <= 0) {
-				System.out.println(nGram+":"+nGramCounter.getNGramCount(nGram)+":"+prob);
-			}
-			
-			if(order < n) {
-				double gamma = calcGamma(nGram);
-
-				logBo = Math.log10(gamma);
-			}
-			
-			ARPAEntry entry = new ARPAEntry(Math.log10(prob), logBo);
-			
+			ARPAEntry entry = new ARPAEntry(Math.log10(prob), 0.0);
 			nGramLogProbability.put(nGram, entry);
 		}
-		ARPAEntry entry = new ARPAEntry(Math.log10(1.0 / nGramCounter.getTotalNGramCountByN(1)), 0.0);
-		nGramLogProbability.put(PseudoWord.oovNGram, entry);		
 		
+		if(n > 1) {
+			//低阶使用折扣后的计数计算平滑概率
+			iterator = nGramCounter.iterator();
+			while(iterator.hasNext()) {//更新低阶的计数
+				NGram nGram = iterator.next();
+				if(nGram.startWith(PseudoWord.sentStart) || nGram.length() == n)
+					continue;
+				
+				nGramCounter.setNGramCount(nGram, getPrefixCount(nGram));
+			}
+			
+			prefixCount = new HashMap<>();
+			continuationCount = new HashMap<>();
+			countOfCounts = new HashMap<>();
+			dicountCoeff = new double[n];
+			statisticsNGramHistory();
+			calcDiscount();
+			
+			iterator = nGramCounter.iterator();
+			while(iterator.hasNext()) {//计算低阶的平滑概率
+				NGram nGram = iterator.next();
+				if(nGram.length() == n || (nGram.length() > 2 && nGramCounter.getNGramCount(nGram) < 2))	//n > 2的n元组若计数为1 直接忽略
+					continue;
+				
+				double prob = calcKNNGramProbability(nGram);
+				ARPAEntry entry = new ARPAEntry(Math.log10(prob), 0.0);
+				nGramLogProbability.put(nGram, entry);
+			}
+		}
+		
+		//增加一个未登录词<unk>，计数为1
+		int M = nGramCounter.getTotalNGramCountByN(1);
+		if(vocabulary.contains(PseudoWord.End) && vocabulary.contains(PseudoWord.Start))
+			M -= nGramCounter.getNGramCount(PseudoWord.sentStart);
+		double prob = (1 - getDiscount(1)) / M;
+		ARPAEntry OOVEntry = new ARPAEntry(Math.log10(prob), 0.0);
+		nGramLogProbability.put(PseudoWord.oovNGram, OOVEntry);
+
+		if(vocabulary.isSentence()) {
+			//给开始标签一个较小的概率
+			ARPAEntry StartEntry = new ARPAEntry(-99, 0.0);
+			nGramLogProbability.put(PseudoWord.sentStart, StartEntry);
+		}
+		
+		//统计历史后缀
 		statisticsNGramHistorySuffix();
+			
+		//计算回退权重
+		for(Entry<NGram, ARPAEntry> entry : nGramLogProbability.entrySet()) {
+			NGram nGram = entry.getKey();
+			double bow = calcBOW(nGram);
+			entry.getValue().setLog_bo(Math.log10(bow));
+		}
 		
 		nGramTypeCounts = new int[n];
 		nGramTypes = new NGram[n][];
@@ -92,47 +152,104 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	private double calcKNNGramProbability(NGram nGram) {
 		double prob = 0.0;		
 		int order = nGram.length();
-
-		if(order == 1) {
-			prob = calcMLNGramProbability(nGram, nGramCounter);
+		
+		if(order == n) {
+			prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / nGramCounter.getNGramCount(nGram.removeLast());
 		}else if(order > 1) {
-			NGram n_Gram = nGram.removeLast();
-			
-			prob = Math.max(nGramCounter.getNGramCount(nGram) * 1.0 - getDiscount(nGram), 0) / getnGramSuffixTotalCount(n_Gram);
-		}else
-			throw new RuntimeException("n元长度小于1");
+			if(nGram.startWith(PseudoWord.sentStart))
+				prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / nGramCounter.getNGramCount(nGram.removeLast());
+			else
+				prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / getContinuationCount(nGram.removeLast());
+		}else {
+			int M = nGramCounter.getTotalNGramCountByN(1);
+			if(vocabulary.contains(PseudoWord.End) && vocabulary.contains(PseudoWord.Start))
+				M -= nGramCounter.getNGramCount(PseudoWord.sentStart);
+			prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / M;
+		}
 		
 		return prob;
 	}
 	
+	/**
+	 * 统计n元历史信息
+	 */
+	private void statisticsNGramHistory() {
+		Iterator<NGram> iterator = nGramCounter.iterator();
+		
+		while(iterator.hasNext()) {
+			NGram nGram = iterator.next();
+			int order = nGram.length();
+			
+			//统计不同长度n元出现1次和2次的类型数量
+			int count = nGramCounter.getNGramCount(nGram);
+			if(count <= 2) {
+				if(countOfCounts.containsKey(count)) {
+					if(countOfCounts.get(count).containsKey(order)) {
+						int Nr = countOfCounts.get(count).get(order);
+						countOfCounts.get(count).put(order, Nr + 1);
+					}else
+						countOfCounts.get(count).put(order, 1);
+				}else {
+					HashMap<Integer, Integer> map = new HashMap<>();
+					map.put(order, 1);
+					countOfCounts.put(count, map);
+				}
+			}
+			
+			if(order > 1){
+				//统计历史前缀数量
+				NGram _nGram = nGram.removeFirst();
+				if(prefixCount.containsKey(_nGram))
+					prefixCount.put(_nGram, prefixCount.get(_nGram) + 1);
+				else
+					prefixCount.put(_nGram, 1);
+				
+				//统计历史接续数量
+				if(order > 2) {
+					NGram _n_Gram = nGram.getSubNGramRemovedBoundary(nGram);
+					if(continuationCount.containsKey(_n_Gram))
+						continuationCount.put(_n_Gram, continuationCount.get(_n_Gram) + 1);
+					else
+						continuationCount.put(_n_Gram, 1);
+				}
+			}//end if
+		}//end while
+	}
+	
+	private int getPrefixCount(NGram nGram) {
+		if(prefixCount.containsKey(nGram))
+			return prefixCount.get(nGram);
+		return 0;
+	}
+	
+	private int getContinuationCount(NGram nGram) {
+		if(continuationCount.containsKey(nGram))
+			return continuationCount.get(nGram);
+		return 0;
+	}
+	
 	
 	/**
-	 * 计算给定n元组的回退权重
-	 * @param nGram	给定n元组
-	 * @return		给定n元组的回退权重
+	 * 返回给定n元长度的折扣数
+	 * @param order	给定的n元的长度
+	 * @return		给定n元长度的折扣数
 	 */
-	private double calcGamma(NGram nGram) {
-		int order = nGram.length();
-		if(order > 1) {
-			NGram n_Gram = nGram.removeLast();
-			int total = getnGramSuffixTotalCount(n_Gram);
-			int count = getHistorySuffixCount(n_Gram);
-			return getDiscount(nGram) * count / total;
-		}else {
-			return getDiscount(nGram) * nGramCounter.getNGramCount(nGram)*nGramCounter.getNGramTypeCountByN(1) / nGramCounter.getTotalNGramCountByN(1);
-		}		
+	private double getDiscount(int order) {
+		if(order >0 || order <= n)
+			return dicountCoeff[order - 1];
+		else
+			return 0.0;
 	}
 	
 	/**
-	 * 返回给定n元组的折扣率
-	 * @param nGram	给定n元组
-	 * @return		给定n元组的折扣率
+	 * 计算不同n元的折扣数
 	 */
-	private double getDiscount(NGram nGram){
-		int order = nGram.length();
-		double n1 = countOfCounts.getNr(1, order);
-		double n2 = countOfCounts.getNr(2, order);
-
-		return n1 / (n1 + 2.0 * n2);
+	private void calcDiscount(){
+		for(int i = 1; i <= n; i++) {
+			int n1 = countOfCounts.get(1).get(i);
+			int n2 = countOfCounts.get(2).get(i);
+		
+			dicountCoeff[i - 1] = n1 / (n1 + 2.0 * n2);
+		}
 	}
 }

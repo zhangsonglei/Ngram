@@ -77,12 +77,13 @@ public class GoodTuringCounts {
 		this.countOfCounts = new HashMap<>();
 		this.disCoeffs = new double[n][maxK];
 		statisticsNGramCountOfTimesSeen(nGramCountMap);
+		
+//		System.out.println(countOfCounts);
 //		for(int i = 0; i < n; i++) {
 //			for(int j = 0; j < maxK; j++)
 //				System.out.print(disCoeffs[i][j]+"\t");
 //			System.out.println();
 //		}
-		
 	}
 	
 	/**
@@ -135,7 +136,6 @@ public class GoodTuringCounts {
 		
 	}
 
-	
 	/**
 	 * 填充n元出现次数r的数量的空缺
 	 * @param nGramCountOfTimesSeen n元出现次数r的数量
@@ -183,125 +183,6 @@ public class GoodTuringCounts {
 			}
 		}	
 	}
-	
-	
-//	/**
-//	 * n元数量的折扣系数
-//	 */
-//	private double[] discountCoeffs;
-//	
-//	/**
-//	 * 元组的出现次数与对应元组类型的个数的映射
-//	 */
-//	private HashMap<Integer, Double> countOfTimes;
-//	
-//	/**
-//	 * 返回给定元组的出现次数的折扣系数
-//	 * @param n	给定元组的出现次数
-//	 * @return	给定元组的出现次数的折扣系数
-//	 */
-//	public double getDiscountCoeff(int n) {
-//		if(n >= discountCoeffs.length)
-//			return 1.0;
-//		
-//		return discountCoeffs[n];
-//	}
-//	
-//	/**
-//	 * 返回给定元组出现次数的n元类型数
-//	 * @param n	元组出现次数
-//	 * @return	给定元组出现次数的n元类型数
-//	 */
-//	public double getNr(int n) {
-//		return countOfTimes.get(n);
-//	}
-//	
-//	public GoodTuringCounts(HashMap<NGram, Integer> nGramCountMap) {
-//		discountCoeffs = new double[maxK + 1];
-//		countOfTimes = new HashMap<>();
-//		calcDiscountCoeffs(nGramCountMap);
-//	}
-//	
-//	/**
-//	 * 统计出现r次的n元的数量
-//	 * @param nGramCountMap	n元与其计数的映射
-//	 * @return				n元的出现次数与n元的类型数量的映射
-//	 */
-//	private void calcDiscountCoeffs(HashMap<NGram, Integer> nGramCountMap) {		
-//		for(Entry<NGram, Integer> entry : nGramCountMap.entrySet()) {
-//			int count = entry.getValue();
-//
-//			if(count < maxK + 2) {			
-//				if(countOfTimes.containsKey(count))
-//					countOfTimes.put(count, countOfTimes.get(count) + 1);
-//				else
-//					countOfTimes.put(count, 1.0);
-//			}
-//		}//end for
-//		
-//		if(countOfTimes.size() < 2) {
-//			System.err.println("训练语料过少,无法使用GoodTuring折扣");
-//			System.exit(0);
-//		}
-////		convertToZr(nGramCountOfTimesSeen);//485623
-//		
-//		processNGramCountOfTimesSeen(countOfTimes);
-//		
-//		//计算n元出现次数0-7的折扣系数
-//		discountCoeffs[0] = 1.0;
-//		double coeff = 0.0;
-//		double commonTerm = (maxK + 1) * countOfTimes.get(maxK + 1) / countOfTimes.get(1);
-//		for(int i = 1; i <= maxK; i++) {
-//			double coeff0 = (i + 1) * countOfTimes.get(i + 1) / (i * countOfTimes.get(i));
-//			coeff = (coeff0 - commonTerm) / (1.0 - commonTerm);
-//			
-//			if(Double.isInfinite(coeff) || coeff <= 0.0 || coeff0 > 1.0) {
-//				System.out.println("警告: 折扣系数 "+ i +" 越界: " + coeff+". 默认为1.0");
-//			    coeff = 1.0;
-//			}
-//			
-//			discountCoeffs[i] = coeff;
-//		}
-//	}
-//	
-//	/**
-//	 * 利用线性回归处理填充n元出现次数r的数量的空缺
-//	 * @param nGramCountOfTimesSeen 出现r次的元组类型的数量
-//	 */
-//	private void processNGramCountOfTimesSeen(
-//			HashMap<Integer, Double> nGramCountOfTimesSeen){
-//		
-//		//判断n元出现次数r是否存在断崖
-//		HashMap<Integer, Double> map = new HashMap<>();
-//		int max_r = 0;
-//		for(Entry<Integer, Double> entry : nGramCountOfTimesSeen.entrySet()) {
-//			max_r = max_r > entry.getKey() ? max_r : entry.getKey();
-//			map.put(entry.getKey(), entry.getValue());		
-//		}
-//		
-////		convertToZr(map);
-//		
-//		//线性回归,log(Nr) = a + b*log(r)
-//		double[] parameters = linearRegression(map);
-//		
-//		/**
-//		 * 填补缺失值
-//		 */
-//		if(max_r < maxK + 1){
-//			for(int i = 1; i < maxK + 2; i++) {
-//				if(!nGramCountOfTimesSeen.containsKey(i)) {
-//					double Nr = Math.pow(10, parameters[0] + parameters[1] * Math.log10(i));
-//					nGramCountOfTimesSeen.put(i, Nr);
-//				}
-//			}
-//		}
-//	}
-
-////////////////////////////////////////////////////////////////////////////////////根据n元的长度分别统计出现r次的n元类型数
-	
-	
-	
-
 	
 	/**
 	 * 将Nr转为Zr = 2Nr /(t − q)
