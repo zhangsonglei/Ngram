@@ -2,7 +2,7 @@ package hust.tools.ngram.model;
 
 import java.io.IOException;
 
-import hust.tools.ngram.datastructure.NGramCountEntry;
+import hust.tools.ngram.utils.NGramCountEntry;
 
 /**
  *<ul>

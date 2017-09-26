@@ -5,11 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
 
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.PseudoWord;
+import hust.tools.ngram.utils.ARPAEntry;
+import hust.tools.ngram.utils.Gram;
+import hust.tools.ngram.utils.NGram;
 import hust.tools.ngram.utils.NGramGenerator;
+import hust.tools.ngram.utils.PseudoWord;
 
 /**
  *<ul>

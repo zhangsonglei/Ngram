@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import hust.tools.ngram.datastructure.NGram;
 
 /**
  *<ul>
@@ -117,7 +116,7 @@ public class GoodTuringCounts {
 		processCountOfCount();
 		
 		for(int i = 1; i <= n; i++) {
-			//计算n元出现次数0-maxK的折扣系数
+			//计算n元出现次数1-maxK的折扣系数
 			double coeff = 0.0;
 			
 			double commonTerm = (maxK + 1) * countOfCounts.get(maxK + 1).get(i) / countOfCounts.get(1).get(i);
@@ -125,8 +124,10 @@ public class GoodTuringCounts {
 				double coeff0 = (j + 1) * countOfCounts.get(j + 1).get(i) / (j * countOfCounts.get(j).get(i));
 				coeff = (coeff0 - commonTerm) / (1.0 - commonTerm);
 				
-				if(Double.isInfinite(coeff) || coeff <= 0.0 || coeff0 > 1.0) {
-					System.err.println("警告: 折扣系数 "+ i+"-"+j +" 越界: " + coeff+". 默认为1.0");
+				if(1 == i && j > 1) {
+					coeff = 1.0;
+				}else if(Double.isInfinite(coeff) || coeff <= 0.0 || coeff0 > 1.0) {
+					System.out.println("警告: 折扣系数 "+ i+"-"+j +" 越界: " + coeff+" 默认为1.0");
 				    coeff = 1.0;
 				}
 				
@@ -157,8 +158,8 @@ public class GoodTuringCounts {
 			}//end for
 
 			if(map.size() < 2) {
-				System.err.println("训练语料过少,无法使用GoodTuring折扣");
-				System.err.println(i+"gram:\n"+map);
+				System.out.println("训练语料过少,无法使用GoodTuring折扣");
+				System.out.println(i+"gram:\n"+map);
 				System.exit(0);
 			}
 			

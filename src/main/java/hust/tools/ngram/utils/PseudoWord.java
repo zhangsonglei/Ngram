@@ -1,6 +1,4 @@
-package hust.tools.ngram.datastructure;
-
-import hust.tools.ngram.utils.StringGram;
+package hust.tools.ngram.utils;
 
 public class PseudoWord {
 	public static final Gram oov = new StringGram("<unk>");

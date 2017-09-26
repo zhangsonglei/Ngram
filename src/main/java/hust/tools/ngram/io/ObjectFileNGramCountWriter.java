@@ -6,8 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
-import hust.tools.ngram.datastructure.NGramCountEntry;
 import hust.tools.ngram.model.NGramCounter;
+import hust.tools.ngram.utils.NGramCountEntry;
 
 /**
  *<ul>

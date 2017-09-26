@@ -10,8 +10,8 @@ import java.io.ObjectInputStream;
 import org.junit.Before;
 import org.junit.Test;
 
-import hust.tools.ngram.datastructure.Gram;
 import hust.tools.ngram.model.NGramCounter;
+import hust.tools.ngram.utils.Gram;
 import hust.tools.ngram.utils.StringGram;
 
 /**

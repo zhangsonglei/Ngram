@@ -1,4 +1,4 @@
-package hust.tools.ngram.datastructure;
+package hust.tools.ngram.utils;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -16,7 +16,7 @@ public class NGram implements Comparable<NGram>, Serializable{
 	/**
 	 * 版本序列号
 	 */
-	private static final long serialVersionUID = -5179548252365264151L;
+	private static final long serialVersionUID = -1958719013863557653L;
 	
 	/**
 	 * n元数组

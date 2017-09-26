@@ -12,8 +12,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import hust.tools.ngram.datastructure.Gram;
-
 /**
  *<ul>
  *<li>Description: 从训练语料中流式读取元组的抽象类

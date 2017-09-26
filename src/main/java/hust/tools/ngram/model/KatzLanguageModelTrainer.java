@@ -3,12 +3,13 @@ package hust.tools.ngram.model;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.PseudoWord;
+
+import hust.tools.ngram.utils.ARPAEntry;
 import hust.tools.ngram.utils.GoodTuringCounts;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.PseudoWord;
 
 /**
  *<ul>
@@ -52,7 +53,7 @@ public class KatzLanguageModelTrainer extends AbstractLanguageModelTrainer{
 			if(nGram.length() > 2 && nGramCounter.getNGramCount(nGram) < 2)//高阶(n > 2)n元组计数小于2 的忽略
 				continue;
 			
-			double prob = calcGoodTuringNGramProbability(nGram);
+			double prob = calcKatzNGramProbability(nGram);
 			ARPAEntry entry = new ARPAEntry(Math.log10(prob), 0.0);
 			nGramLogProbability.put(nGram, entry);
 		}
@@ -75,14 +76,8 @@ public class KatzLanguageModelTrainer extends AbstractLanguageModelTrainer{
 		for(Entry<NGram, ARPAEntry> entry : nGramLogProbability.entrySet()) {
 			NGram nGram = entry.getKey();
 			double bow = calcBOW(nGram);
-			entry.getValue().setLog_bo(Math.log10(bow));
-		}
-		
-		nGramTypeCounts = new int[n];
-		nGramTypes = new NGram[n][];
-		for(int i = 0; i < n; i++) {
-			nGramTypes[i] = statTypeAndCount(nGramLogProbability, i + 1);
-			nGramTypeCounts[i] = nGramTypes[i].length;
+			if(bow > 0.0)
+				entry.getValue().setLog_bo(Math.log10(bow));
 		}
 		
 		return new NGramLanguageModel(nGramLogProbability, n, "katz", vocabulary);
@@ -94,15 +89,15 @@ public class KatzLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	 * @param nGramCount			n元的计数
 	 * @return						Good Turing平滑概率			
 	 */
-	private double calcGoodTuringNGramProbability(NGram nGram) {
-		int n = nGram.length();
-		if(n > 0) {
+	private double calcKatzNGramProbability(NGram nGram) {
+		int order = nGram.length();
+		if(order > 0) {
 			int count = nGramCounter.getNGramCount(nGram);
 			double prob = 0.0;
 			double gtCount = 0.0;
 			
-			gtCount = countOfCounts.getDiscountCoeff(count, n) * count;
-			if(n > 1) {
+			gtCount = countOfCounts.getDiscountCoeff(count, order) * count;
+			if(order > 1) {
 				prob =  gtCount / nGramCounter.getNGramCount(nGram.removeLast());
 			}else
 				prob = gtCount / nGramCounter.getTotalNGramCountByN(1);

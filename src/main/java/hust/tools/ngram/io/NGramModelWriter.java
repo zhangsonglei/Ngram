@@ -3,11 +3,12 @@ package hust.tools.ngram.io;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.NGramModelEntry;
+
 import hust.tools.ngram.model.AbstractNGramModelWriter;
 import hust.tools.ngram.model.NGramLanguageModel;
+import hust.tools.ngram.utils.ARPAEntry;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.NGramModelEntry;
 
 /**
  *<ul>

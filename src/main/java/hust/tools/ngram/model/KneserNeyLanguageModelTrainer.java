@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.PseudoWord;
+import hust.tools.ngram.utils.ARPAEntry;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.PseudoWord;
 
 /**
  *<ul>
@@ -65,19 +65,21 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 		countOfCounts = new HashMap<>();
 		dicountCoeff = new double[n];
 		statisticsNGramHistory();
+		
 		calcDiscount();
 		
 		Iterator<NGram> iterator = nGramCounter.iterator();
 		//对于最高阶直接使用原始计数计算平滑概率
 		while(iterator.hasNext()) { 
 			NGram nGram = iterator.next();
-			if(nGram.length() != n || (nGram.length() > 2 && nGramCounter.getNGramCount(nGram) < 2))	//n > 2的n元组若计数为1 直接忽略
+			if(nGram.length() != n || (nGram.length() > 2 && nGramCounter.getNGramCount(nGram) < 2)) //不是最高阶或者n > 2的n元组若计数为1 直接忽略
 				continue;
 			
 			double prob = calcKNNGramProbability(nGram);
 			ARPAEntry entry = new ARPAEntry(Math.log10(prob), 0.0);
 			nGramLogProbability.put(nGram, entry);
 		}
+
 		
 		if(n > 1) {
 			//低阶使用折扣后的计数计算平滑概率
@@ -96,7 +98,7 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 			dicountCoeff = new double[n];
 			statisticsNGramHistory();
 			calcDiscount();
-			
+
 			iterator = nGramCounter.iterator();
 			while(iterator.hasNext()) {//计算低阶的平滑概率
 				NGram nGram = iterator.next();
@@ -107,38 +109,34 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 				ARPAEntry entry = new ARPAEntry(Math.log10(prob), 0.0);
 				nGramLogProbability.put(nGram, entry);
 			}
+
+			//统计历史后缀
+			statisticsNGramHistorySuffix();
+			
+			//计算回退权重
+			for(Entry<NGram, ARPAEntry> entry : nGramLogProbability.entrySet()) {
+				NGram nGram = entry.getKey();
+				double bow = calcBOW(nGram);
+				if(!(Double.isNaN(bow) || Double.isInfinite(bow)))
+					entry.getValue().setLog_bo(Math.log10(bow));
+			}
 		}
 		
-		//增加一个未登录词<unk>，计数为1
-		int M = nGramCounter.getTotalNGramCountByN(1);
-		if(vocabulary.contains(PseudoWord.End) && vocabulary.contains(PseudoWord.Start))
-			M -= nGramCounter.getNGramCount(PseudoWord.sentStart);
-		double prob = (1 - getDiscount(1)) / M;
-		ARPAEntry OOVEntry = new ARPAEntry(Math.log10(prob), 0.0);
-		nGramLogProbability.put(PseudoWord.oovNGram, OOVEntry);
-
 		if(vocabulary.isSentence()) {
 			//给开始标签一个较小的概率
 			ARPAEntry StartEntry = new ARPAEntry(-99, 0.0);
 			nGramLogProbability.put(PseudoWord.sentStart, StartEntry);
 		}
 		
-		//统计历史后缀
-		statisticsNGramHistorySuffix();
-			
-		//计算回退权重
-		for(Entry<NGram, ARPAEntry> entry : nGramLogProbability.entrySet()) {
-			NGram nGram = entry.getKey();
-			double bow = calcBOW(nGram);
-			entry.getValue().setLog_bo(Math.log10(bow));
+		//增加一个未登录词<unk>，计数为词典大小（不算开始标签）乘以unigram的折扣率
+		int M = nGramCounter.getTotalNGramCountByN(1);
+		int count = vocabulary.size();
+		if(vocabulary.contains(PseudoWord.End) && vocabulary.contains(PseudoWord.Start)) {
+			M -= nGramCounter.getNGramCount(PseudoWord.sentStart);
 		}
-		
-		nGramTypeCounts = new int[n];
-		nGramTypes = new NGram[n][];
-		for(int i = 0; i < n; i++) {
-			nGramTypes[i] = statTypeAndCount(nGramLogProbability, i + 1);
-			nGramTypeCounts[i] = nGramTypes[i].length;
-		}
+		double oovProb = (count*getDiscount(1) - getDiscount(1)) / M;
+		ARPAEntry OOVEntry = new ARPAEntry(Math.log10(oovProb), 0.0);
+		nGramLogProbability.put(PseudoWord.oovNGram, OOVEntry);
 		
 		return new NGramLanguageModel(nGramLogProbability, n, "kn", vocabulary);
 	}
@@ -153,18 +151,18 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 		double prob = 0.0;		
 		int order = nGram.length();
 		
-		if(order == n) {
+		if(order == 1) {
+			int M = nGramCounter.getTotalNGramCountByN(1);
+			if(vocabulary.contains(PseudoWord.End) && vocabulary.contains(PseudoWord.Start))
+				M -= nGramCounter.getNGramCount(PseudoWord.sentStart);
+			prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / M;
+		}else if(order == n) {
 			prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / nGramCounter.getNGramCount(nGram.removeLast());
 		}else if(order > 1) {
 			if(nGram.startWith(PseudoWord.sentStart))
 				prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / nGramCounter.getNGramCount(nGram.removeLast());
 			else
 				prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / getContinuationCount(nGram.removeLast());
-		}else {
-			int M = nGramCounter.getTotalNGramCountByN(1);
-			if(vocabulary.contains(PseudoWord.End) && vocabulary.contains(PseudoWord.Start))
-				M -= nGramCounter.getNGramCount(PseudoWord.sentStart);
-			prob = Math.max(nGramCounter.getNGramCount(nGram) - getDiscount(order), 0) / M;
 		}
 		
 		return prob;
@@ -195,7 +193,7 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 					countOfCounts.put(count, map);
 				}
 			}
-			
+						
 			if(order > 1){
 				//统计历史前缀数量
 				NGram _nGram = nGram.removeFirst();
@@ -246,10 +244,40 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 	 */
 	private void calcDiscount(){
 		for(int i = 1; i <= n; i++) {
-			int n1 = countOfCounts.get(1).get(i);
-			int n2 = countOfCounts.get(2).get(i);
-		
+			int n1 = 0;
+			if(countOfCounts.containsKey(1)) {
+				if(countOfCounts.get(1).containsKey(i)) {
+					n1 = countOfCounts.get(1).get(i);	
+				}else {
+					System.out.println("discount: 1_"+i+" is null");
+					System.exit(0);
+				}
+			}else {
+				System.out.println("discount: 1 is null");
+				System.exit(0);
+			}
+			
+			int n2 = 0;
+			if(countOfCounts.containsKey(2)) {
+				if(countOfCounts.get(2).containsKey(i)) {
+					n2 = countOfCounts.get(2).get(i);
+				}else {
+					System.out.println("discount: 1_"+i+" is null");
+					System.exit(0);
+				}
+			}else {
+				System.out.println("discount: 2 is null");
+				System.exit(0);
+			}
+					
 			dicountCoeff[i - 1] = n1 / (n1 + 2.0 * n2);
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private void showDiscount() {
+		for(int i = 0; i < dicountCoeff.length; i++) {
+			System.out.println("discount"+i+": "+dicountCoeff[i]);
 		}
 	}
 }

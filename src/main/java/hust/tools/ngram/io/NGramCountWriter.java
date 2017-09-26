@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.NGramCountEntry;
 import hust.tools.ngram.model.AbstractNGramCountWriter;
 import hust.tools.ngram.model.NGramCounter;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.NGramCountEntry;
 
 /**
  *<ul>

@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.PseudoWord;
+import hust.tools.ngram.utils.ARPAEntry;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.PseudoWord;
 
 /**
  *<ul>
@@ -89,16 +89,10 @@ public class LaplaceLanguageModelTrainer extends AbstractLanguageModelTrainer {
 		for(Entry<NGram, ARPAEntry> entry : nGramLogProbability.entrySet()) {
 			NGram nGram = entry.getKey();
 			double bow = calcBOW(nGram);
-			entry.getValue().setLog_bo(Math.log10(bow));
+			if(!(Double.isNaN(bow) || Double.isInfinite(bow)))
+				entry.getValue().setLog_bo(Math.log10(bow));
 		}
-		
-		nGramTypeCounts = new int[n];
-		nGramTypes = new NGram[n][];
-		for(int i = 0; i < n; i++) {
-			nGramTypes[i] = statTypeAndCount(nGramLogProbability, i + 1);
-			nGramTypeCounts[i] = nGramTypes[i].length;
-		}
-		
+	
 		return new NGramLanguageModel(nGramLogProbability, n, "laplace", vocabulary);
 	}
 	

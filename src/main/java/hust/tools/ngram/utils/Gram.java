@@ -1,4 +1,4 @@
-package hust.tools.ngram.datastructure;
+package hust.tools.ngram.utils;
 
 import java.io.Serializable;
 
@@ -11,9 +11,12 @@ import java.io.Serializable;
  *</ul>
  */
 public abstract class Gram implements Comparable<Gram>, Serializable{
-
-	private static final long serialVersionUID = 6733030984766178958L;
 	
+	/**
+	 * 版本序列号
+	 */
+	private static final long serialVersionUID = -2284875744618199191L;
+
 	@Override
 	public abstract int hashCode();
 	

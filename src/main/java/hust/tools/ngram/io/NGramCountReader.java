@@ -3,11 +3,12 @@ package hust.tools.ngram.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.NGramCountEntry;
+
 import hust.tools.ngram.model.AbstractNGramCountReader;
 import hust.tools.ngram.model.DataReader;
 import hust.tools.ngram.model.NGramCounter;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.NGramCountEntry;
 
 /**
  *<ul>

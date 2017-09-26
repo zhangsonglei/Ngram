@@ -8,8 +8,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.NGram;
 import hust.tools.ngram.utils.NGramGenerator;
 
 /**

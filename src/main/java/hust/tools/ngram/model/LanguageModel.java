@@ -2,8 +2,8 @@ package hust.tools.ngram.model;
 
 import java.util.List;
 
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.NGram;
+import hust.tools.ngram.utils.Gram;
+import hust.tools.ngram.utils.NGram;
 
 /**
  *<ul>

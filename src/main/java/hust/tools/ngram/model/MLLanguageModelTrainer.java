@@ -3,10 +3,10 @@ package hust.tools.ngram.model;
 import java.io.IOException;
 import java.util.Iterator;
 
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.NGram;
+import hust.tools.ngram.utils.ARPAEntry;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
+import hust.tools.ngram.utils.NGram;
 
 /**
  *<ul>
@@ -32,8 +32,6 @@ public class MLLanguageModelTrainer extends AbstractLanguageModelTrainer {
 
 	@Override
 	public NGramLanguageModel trainModel() {
-		nGramTypes = nGramCounter.getNGramTypes();
-		nGramTypeCounts = nGramCounter.getNGramTypeCount();
 		
 		Iterator<NGram> iterator = nGramCounter.iterator();
 		while(iterator.hasNext()) {

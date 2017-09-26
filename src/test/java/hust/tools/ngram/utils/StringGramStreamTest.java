@@ -13,8 +13,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import hust.tools.ngram.datastructure.Gram;
-
 /**
  *<ul>
  *<li>Description: 测试String类型的元流的读取 

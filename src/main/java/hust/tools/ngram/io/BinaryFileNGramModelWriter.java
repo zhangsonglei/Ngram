@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import hust.tools.ngram.datastructure.NGramModelEntry;
 import hust.tools.ngram.model.NGramLanguageModel;
+import hust.tools.ngram.utils.NGramModelEntry;
 
 /**
  *<ul>

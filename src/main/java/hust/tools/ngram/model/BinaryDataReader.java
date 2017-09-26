@@ -7,10 +7,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.NGramCountEntry;
-import hust.tools.ngram.datastructure.NGramModelEntry;
+import hust.tools.ngram.utils.Gram;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.NGramCountEntry;
+import hust.tools.ngram.utils.NGramModelEntry;
 import hust.tools.ngram.utils.StringGram;
 
 /**

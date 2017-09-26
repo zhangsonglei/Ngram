@@ -9,8 +9,8 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.NGram;
+import hust.tools.ngram.utils.Gram;
+import hust.tools.ngram.utils.NGram;
 import hust.tools.ngram.utils.StringGram;
 
 /**

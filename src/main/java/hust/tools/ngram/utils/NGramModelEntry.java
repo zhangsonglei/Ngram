@@ -1,4 +1,4 @@
-package hust.tools.ngram.datastructure;
+package hust.tools.ngram.utils;
 
 import java.io.Serializable;
 

@@ -6,9 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.NGramModelEntry;
+import hust.tools.ngram.utils.ARPAEntry;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.NGramModelEntry;
 
 /**
  *<ul>

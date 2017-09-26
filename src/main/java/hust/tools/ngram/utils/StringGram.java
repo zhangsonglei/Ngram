@@ -1,7 +1,5 @@
 package hust.tools.ngram.utils;
 
-import hust.tools.ngram.datastructure.Gram;
-
 /**
  *<ul>
  *<li>Description: 以一个String类型作为一个元 
@@ -15,7 +13,8 @@ public class StringGram extends Gram{
 	/**
 	 * 版本序列号
 	 */
-	private static final long serialVersionUID = -1647840319435240461L;
+	private static final long serialVersionUID = 2433153820971791184L;
+	
 	/**
 	 * 每个字（字母或符号）作为一个元
 	 */
@@ -28,8 +27,6 @@ public class StringGram extends Gram{
 	public String getGram() {
 		return this.gram;
 	}
-
-	
 
 	@Override
 	public int hashCode() {

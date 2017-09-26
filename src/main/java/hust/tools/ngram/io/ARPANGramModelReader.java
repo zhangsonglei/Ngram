@@ -5,13 +5,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.NGram;
+
 import hust.tools.ngram.model.AbstractNGramModelReader;
 import hust.tools.ngram.model.DataReader;
 import hust.tools.ngram.model.NGramLanguageModel;
 import hust.tools.ngram.model.Vocabulary;
+import hust.tools.ngram.utils.ARPAEntry;
+import hust.tools.ngram.utils.Gram;
+import hust.tools.ngram.utils.NGram;
 import hust.tools.ngram.utils.StringGram;
 
 /**

@@ -12,11 +12,11 @@ import java.io.ObjectOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
-import hust.tools.ngram.datastructure.Gram;
 import hust.tools.ngram.model.NGramCounter;
 import hust.tools.ngram.model.NGramLanguageModel;
 import hust.tools.ngram.model.AbstractLanguageModelTrainer;
 import hust.tools.ngram.model.MLLanguageModelTrainer;
+import hust.tools.ngram.utils.Gram;
 import hust.tools.ngram.utils.StringGram;
 
 /**

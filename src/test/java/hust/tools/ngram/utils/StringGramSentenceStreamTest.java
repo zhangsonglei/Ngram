@@ -13,8 +13,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import hust.tools.ngram.datastructure.Gram;
-
 /**
  *<ul>
  *<li>Description: 测试String类型的句子流的读取 ，带开始结束标签

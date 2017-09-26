@@ -3,8 +3,8 @@ package hust.tools.ngram.io;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
-import hust.tools.ngram.datastructure.NGramModelEntry;
 import hust.tools.ngram.model.NGramLanguageModel;
+import hust.tools.ngram.utils.NGramModelEntry;
 
 /**
  *<ul>

@@ -4,14 +4,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.NGram;
+
+import hust.tools.ngram.utils.ARPAEntry;
+import hust.tools.ngram.utils.Gram;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
+import hust.tools.ngram.utils.NGram;
 
 /**
  *<ul>
@@ -39,16 +38,6 @@ public abstract class AbstractLanguageModelTrainer {
 	protected HashMap<NGram, ARPAEntry> nGramLogProbability;
 	
 	/**
-	 * 不同长度的所有n元
-	 */
-	protected NGram[][] nGramTypes;
-	
-	/**
-	 * 不同长度的所有n元的个数
-	 */
-	protected int[] nGramTypeCounts;
-	
-	/**
 	 * n元计数器
 	 */
 	protected NGramCounter nGramCounter;
@@ -67,8 +56,6 @@ public abstract class AbstractLanguageModelTrainer {
 	public AbstractLanguageModelTrainer(GramStream gramStream, int  n) throws IOException {
 		this.n = n;
 		this.nGramLogProbability = new HashMap<NGram, ARPAEntry>();
-		this.nGramTypes = new NGram[n][];
-		this.nGramTypeCounts = new int[n];
 		this.nGramCounter = new NGramCounter(gramStream, n);
 		this.vocabulary = nGramCounter.vocabulary;
 		this.nGramSuffix = new HashMap<>();
@@ -83,8 +70,6 @@ public abstract class AbstractLanguageModelTrainer {
 	public AbstractLanguageModelTrainer(GramSentenceStream gramSentenceStream, int  n) throws IOException {
 		this.n = n;
 		this.nGramLogProbability = new HashMap<NGram, ARPAEntry>();
-		this.nGramTypes = new NGram[n][];
-		this.nGramTypeCounts = new int[n];
 		this.nGramCounter = new NGramCounter(gramSentenceStream, n);
 		this.vocabulary = nGramCounter.vocabulary;
 		this.nGramSuffix = new HashMap<>();
@@ -98,8 +83,6 @@ public abstract class AbstractLanguageModelTrainer {
 	public AbstractLanguageModelTrainer(NGramCounter nGramCounter, int n) {
 		this.n = n;
 		this.nGramLogProbability = new HashMap<NGram, ARPAEntry>();
-		this.nGramTypes = new NGram[n][];
-		this.nGramTypeCounts = new int[n];
 		this.nGramCounter = nGramCounter;
 		this.vocabulary = nGramCounter.vocabulary;
 		this.nGramSuffix = new HashMap<>();
@@ -111,23 +94,6 @@ public abstract class AbstractLanguageModelTrainer {
 	 * @throws IOException 
 	 */
 	public abstract NGramLanguageModel trainModel();
-	
-	/**
-	 * 统计给定n元长度的所有n元类型
-	 * @param map	n元与其概率的映射
-	 * @param n		n元长度
-	 * @return		给定n元长度下的所有n元类型
-	 */
-	protected NGram[] statTypeAndCount(HashMap<NGram, ARPAEntry> map, int n) {
-		Set<NGram> nGrams = map.keySet();
-		List<NGram> list = new LinkedList<>();
-		
-		for(NGram nGram : nGrams)
-			if(nGram.length() == n)
-				list.add(nGram);
-		
-		return list.toArray(new NGram[list.size()]);
-	}
 		
 	/**
 	 * 返回给定n元的历史后缀链表 
@@ -189,7 +155,7 @@ public abstract class AbstractLanguageModelTrainer {
 	}
 	
 	/**
-	 * 返回给定n元的回退权重back off weight
+	 * 返回给定n元的回退权重
 	 * @param nGram 待求回退权重的n元
 	 * @return		给定n元的回退权重
 	 */
@@ -211,6 +177,28 @@ public abstract class AbstractLanguageModelTrainer {
 			}
 			
 			return (1 - sum_N) / (1 - sum_N_1);
+		}else
+			return 1.0;
+    }
+    
+    /**
+     * 返回给定n元的插值权重
+	 * @param nGram 待求插值权重的n元
+	 * @return		给定n元的插值权重
+     */
+    protected double calcInterpolateW(NGram nGram) {
+    	//例子：求w1 w2的回退权重
+    	double sum_N = 0.0;		//所有出现的以w1 w2为前缀的trigram (w1 w2 *) 的概率之和
+		
+    	Set<Gram> suffixs = getNGramHistorySuffix(nGram);
+    	if(suffixs != null) {
+			for(Gram gram : suffixs) {
+				NGram ngram = nGram.addLast(gram);
+				if(nGramLogProbability.containsKey(ngram))
+					sum_N += Math.pow(10, nGramLogProbability.get(ngram).getLog_prob());
+			}
+			
+			return 1 - sum_N;
 		}else
 			return 1.0;
     }

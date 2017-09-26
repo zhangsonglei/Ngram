@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import hust.tools.ngram.datastructure.Gram;
 import hust.tools.ngram.io.ARPATextFileNGramModleReader;
 import hust.tools.ngram.io.BinaryFileNGramModelReader;
 import hust.tools.ngram.io.FileOperator;
 import hust.tools.ngram.io.TextFileNGramModelReader;
 import hust.tools.ngram.model.AbstractNGramModelReader;
 import hust.tools.ngram.model.NGramLanguageModel;
+import hust.tools.ngram.utils.Gram;
 import hust.tools.ngram.utils.StringGram;
 
 public class NGramLM {

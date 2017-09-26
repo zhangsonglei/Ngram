@@ -2,8 +2,6 @@ package hust.tools.ngram.utils;
 
 import java.io.IOException;
 
-import hust.tools.ngram.datastructure.Gram;
-
 /**
  *<ul>
  *<li>Description: 从流中读取元组的接口  

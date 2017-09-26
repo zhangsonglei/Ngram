@@ -3,9 +3,6 @@ package hust.tools.ngram.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.NGram;
-
 /**
  *<ul>
  *<li>Description:将给定序列生成所有的NGram

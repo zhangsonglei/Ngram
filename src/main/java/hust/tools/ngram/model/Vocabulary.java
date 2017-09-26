@@ -2,10 +2,11 @@ package hust.tools.ngram.model;
 
 import java.io.IOException;
 import java.util.HashSet;
-import hust.tools.ngram.datastructure.Gram;
-import hust.tools.ngram.datastructure.PseudoWord;
+
+import hust.tools.ngram.utils.Gram;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
+import hust.tools.ngram.utils.PseudoWord;
 
 /**
  *<ul>

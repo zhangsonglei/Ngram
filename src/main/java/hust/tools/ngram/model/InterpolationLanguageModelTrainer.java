@@ -2,11 +2,13 @@ package hust.tools.ngram.model;
 
 import java.io.IOException;
 import java.util.Iterator;
-import hust.tools.ngram.datastructure.ARPAEntry;
-import hust.tools.ngram.datastructure.NGram;
-import hust.tools.ngram.datastructure.PseudoWord;
+import java.util.Map.Entry;
+
+import hust.tools.ngram.utils.ARPAEntry;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;
+import hust.tools.ngram.utils.NGram;
+import hust.tools.ngram.utils.PseudoWord;
 
 /**
  *<ul>
@@ -76,14 +78,17 @@ public class InterpolationLanguageModelTrainer extends AbstractLanguageModelTrai
 			nGramLogProbability.put(nGram, entry);
 		}
 		
-		ARPAEntry entry = new ARPAEntry(Math.log10(1.0 / nGramCounter.getTotalNGramCountByN(1)), 0.0);
-		nGramLogProbability.put(PseudoWord.oovNGram, entry);
+		ARPAEntry oovEntry = new ARPAEntry(Math.log10(1.0*getLamda(PseudoWord.oovNGram) / nGramCounter.getTotalNGramCountByN(1)), 0.0);
+		nGramLogProbability.put(PseudoWord.oovNGram, oovEntry);
 		
-		nGramTypeCounts = new int[n];
-		nGramTypes = new NGram[n][];
-		for(int i = 0; i < n; i++) {
-			nGramTypes[i] = statTypeAndCount(nGramLogProbability, i + 1);
-			nGramTypeCounts[i] = nGramTypes[i].length;
+		//计算回退权重
+		for(Entry<NGram, ARPAEntry> entry : nGramLogProbability.entrySet()) {
+			NGram nGram = entry.getKey();
+			double bow = calcBOW(nGram);
+			if(bow > 0.0)
+				entry.getValue().setLog_bo(Math.log10(bow));
+			else
+				System.out.println(nGram+":bow= "+bow);
 		}
 		
 		return new NGramLanguageModel(nGramLogProbability, n, "interpolate", vocabulary);

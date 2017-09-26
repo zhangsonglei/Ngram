@@ -1,4 +1,4 @@
-package hust.tools.ngram.model;
+package hust.tools.ngram.utils;
 
 import static org.junit.Assert.*;
 
@@ -25,11 +25,6 @@ public class StringGramTest {
 	public void testGetWord() {
 		String string = "zsl";
 		assertEquals(string, str1.getGram());
-	}
-	
-	@Test
-	public void testHashCode() {
-		System.out.println(str1.hashCode());
 	}
 	
 	@Test
