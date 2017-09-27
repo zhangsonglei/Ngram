@@ -83,10 +83,10 @@ public class NGramLanguageModel implements LanguageModel {
 	}
 	
 	@Override
-	public double getSequenceLogProbability(Gram[] sequence, int order) {
+	public double getSequenceLogProbability(Gram[] sequence, int order, boolean boundary) {
 		double probability = 0.0;
 		
-		List<NGram> nGrams = splitSequence(sequence, order);
+		List<NGram> nGrams = splitSequence(sequence, order, boundary);
 		if(nGrams.size() > 0) {
 			for(NGram nGram : nGrams)
 				probability += getNGramLogProbability(nGram);
@@ -101,7 +101,7 @@ public class NGramLanguageModel implements LanguageModel {
 	}
 	
 	@Override
-	public NGram getNextPrediction(Gram[] sequence, int order) {
+	public NGram getNextPrediction(Gram[] sequence, int order, boolean boundary) {
 		NGram predict = null;
 		double maxProb = Double.NEGATIVE_INFINITY;
 		
@@ -114,7 +114,7 @@ public class NGramLanguageModel implements LanguageModel {
 			for (int i = 0; i < nGram.length(); i++)
 				grams[i + sequence.length] = nGram.getGram(i);
 
-			double prob = getSequenceLogProbability(grams, order);	      
+			double prob = getSequenceLogProbability(grams, order, boundary);	      
 			if (prob > maxProb) {
 				maxProb = prob;
 				predict = nGram;
@@ -125,7 +125,7 @@ public class NGramLanguageModel implements LanguageModel {
 	}
 	
 	@Override
-	public double getPerplexity(List<Gram[]> testSet, int order) {
+	public double getPerplexity(List<Gram[]> testSet, int order, boolean boundary) {
 		//句子数量
 		int sentences = 0;
 		//词的数量
@@ -145,7 +145,7 @@ public class NGramLanguageModel implements LanguageModel {
 					OOVs++;
 			}
 
-			List<NGram> nGrams = splitSequence(grams, order);
+			List<NGram> nGrams = splitSequence(grams, order, boundary);
 			double nGramLogProb = 0.0;
 			for(NGram nGram : nGrams) {
 				nGramLogProb = getNGramLogProbability(nGram);
@@ -228,29 +228,69 @@ public class NGramLanguageModel implements LanguageModel {
 	 * @param order		n元阶数
 	 * @return			所有切分的n元
 	 */
-	private List<NGram> splitSequence(Gram[] sequence, int order) {
+	private List<NGram> splitSequence(Gram[] sequence, int order, boolean boundary) {
 		List<NGram> list = new LinkedList<>();		
 		
-		if(sequence.length >= order) {
-			Gram[] grams = new Gram[order - 1]; 
-			for(int i = 0; i < grams.length; i++)
-				grams[i] = sequence[i];
-			
-			NGram nGram = new NGram(grams);
-			for(int i = 0; i < order - 1; i++) {
-				list.add(nGram);
-				nGram = nGram.removeLast();
+		if(boundary) {//为句子加上边界<s>...</s>
+			if(sequence.length >= order) {//序列长度大于等于order
+				//长度小于order的n元
+				Gram[] grams = new Gram[order - 1]; 
+				for(int i = 0; i < grams.length; i++)
+					grams[i] = sequence[i];
+				
+				NGram nGram = new NGram(grams);
+				for(int i = 0; i < order - 1; i++) {
+					list.add(nGram.addFirst(PseudoWord.Start));
+					nGram = nGram.removeLast();
+				}
+				
+				//长度为order的n元
+				List<NGram> nGrams = NGramGenerator.generate(sequence, order);
+				for(NGram ngram : nGrams)
+					list.add(ngram);
+					
+				NGram end = list.get(list.size() - 1);
+				if(end.length() == order)
+					list.add(end.removeFirst().addLast(PseudoWord.End));
+				else
+					list.add(end.addLast(PseudoWord.End));
+			}else {//序列长度小于order
+				NGram nGram = new NGram(sequence);
+				for(int i = 0; i < sequence.length; i++) {
+					list.add(nGram.addFirst(PseudoWord.Start));
+					nGram = nGram.removeLast();
+				}
+				
+				NGram end = list.get(0);
+				if(end.length() == order)
+					list.add(end.removeFirst().addLast(PseudoWord.End));
+				else
+					list.add(end.addLast(PseudoWord.End));
 			}
-			
-			List<NGram> nGrams = NGramGenerator.generate(sequence, order);
-			for(NGram ngram : nGrams)
-				list.add(ngram);
-		}else {
-			NGram nGram = new NGram(sequence);
-			for(int i = 0; i < sequence.length; i++) {
-				list.add(nGram);
-				nGram = nGram.removeLast();
-			}
+		}else {//不加边界
+			if(sequence.length >= order) {//序列长度大于等于order
+				//长度小于order的n元
+				Gram[] grams = new Gram[order - 1]; 
+				for(int i = 0; i < grams.length; i++)
+					grams[i] = sequence[i];
+				
+				NGram nGram = new NGram(grams);
+				for(int i = 0; i < order - 1; i++) {
+					list.add(nGram);
+					nGram = nGram.removeLast();
+				}
+				
+				//长度为order的n元
+				List<NGram> nGrams = NGramGenerator.generate(sequence, order);
+				for(NGram ngram : nGrams)
+					list.add(ngram);
+			}else {//序列长度小于order
+				NGram nGram = new NGram(sequence);
+				for(int i = 0; i < sequence.length; i++) {
+					list.add(nGram);
+					nGram = nGram.removeLast();
+				}
+			}//end if-else in no-boundary
 		}
 		
 		return list;

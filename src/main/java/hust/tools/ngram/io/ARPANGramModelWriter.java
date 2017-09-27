@@ -1,7 +1,6 @@
 package hust.tools.ngram.io;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import hust.tools.ngram.model.AbstractNGramModelWriter;
@@ -53,7 +52,7 @@ public abstract class ARPANGramModelWriter extends AbstractNGramModelWriter{
 		for(int i = 0; i < nGramTypes.length; i++) {
 			writeUTF("\n\\" + (i + 1) + "-grams:");
 			
-			Arrays.sort(nGramTypes[i]);	
+			//Arrays.sort(nGramTypes[i]);	
 			for(int j = 0; j < nGramTypes[i].length; j++) {
 				NGramModelEntry modelEntry;
 				NGram nGram = nGramTypes[i][j];

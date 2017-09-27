@@ -102,12 +102,12 @@ public class NGramLanguageModelTest {
 		Gram[] sentence = new Gram[]{new StringGram("2"), new StringGram("3"), 
 									 new StringGram("4"), new StringGram("3")};
 		//测试计算序列的概率
-		assertTrue(0.0 == nGramLM.getSequenceLogProbability(sequence, 3));
-		assertTrue(0.125 == nGramLM.getSequenceLogProbability(sentence, 3));
+		assertTrue(0.0 == nGramLM.getSequenceLogProbability(sequence, 3, false));
+		assertTrue(0.125 == nGramLM.getSequenceLogProbability(sentence, 3, false));
 		
 		//预测下一个词
 		NGram next = new NGram(new Gram[]{new StringGram("2"), new StringGram("3")});
-		assertEquals(next, nGramLM.getNextPrediction(sentence, 3));
+		assertEquals(next, nGramLM.getNextPrediction(sentence, 3, false));
 	}
 	
 	/**
@@ -134,10 +134,10 @@ public class NGramLanguageModelTest {
 				new StringGram("4"), new StringGram("3")};
 
 		//测试计算序列的概率
-		assertEquals(1.0 / 19208, nGramLM.getSequenceLogProbability(sequence, 3), 0.000000000000000001);
+		assertEquals(1.0 / 19208, nGramLM.getSequenceLogProbability(sequence, 3, false), 0.000000000000000001);
 		//预测下一个词
 		NGram next = new NGram(new Gram[]{new StringGram("2")});
-		assertEquals(next, nGramLM.getNextPrediction(sentence, 3));
+		assertEquals(next, nGramLM.getNextPrediction(sentence, 3, false));
 	}
 
 	

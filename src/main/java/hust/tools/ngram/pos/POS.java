@@ -1,68 +1,265 @@
 package hust.tools.ngram.pos;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-
-import hust.tools.ngram.io.ARPATextFileNGramModleWriter;
-import hust.tools.ngram.io.TextFileNGramModelWriter;
-import hust.tools.ngram.model.AbstractLanguageModelTrainer;
-import hust.tools.ngram.model.KatzLanguageModelTrainer;
-import hust.tools.ngram.model.KneserNeyLanguageModelTrainer;
-import hust.tools.ngram.model.NGramCounter;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.util.HashMap;
+import hust.tools.ngram.io.ARPATextFileNGramModleReader;
+import hust.tools.ngram.io.BinaryFileNGramModelReader;
+import hust.tools.ngram.io.ObjectFileNGramModelReader;
+import hust.tools.ngram.io.TextFileNGramModelReader;
+import hust.tools.ngram.model.AbstractNGramModelReader;
 import hust.tools.ngram.model.NGramLanguageModel;
-import hust.tools.ngram.utils.AbstractGramSentenceStream;
+import hust.tools.ngram.utils.Gram;
 import hust.tools.ngram.utils.StringGram;
-import hust.tools.ngram.utils.StringGramSentenceStream;
 
 public class POS {
 	
-	public static void main(String[] args) throws IOException {
-		long start = System.currentTimeMillis();
+	/**
+	 * 基于词的tri-gram模型
+	 */
+	private static NGramLanguageModel wordLM;
+	
+	/**
+	 * 基于词的词性的four-gram模型
+	 */
+	private static NGramLanguageModel tagLM;
+	
+	/**
+	 * 基于词及其词性的tri-gram模型
+	 */
+	private static NGramLanguageModel wordTagLM;
+	
+	/**
+	 * 统计训练语料中每个词的词频
+	 */
+	private static HashMap<Gram, HashMap<Gram, Integer>> wordTowardsTagsCount;
+	
+	/**
+	 * 统计训练语料中每个词性的频率
+	 */
+	private static HashMap<Gram, HashMap<Gram, Integer>> tagTowardsWordsCount;
+	
+	/**
+	 * 返回训练语料中给定词的数量
+	 * @param word	给定的词
+	 * @return		训练语料中给定词的数量
+	 */
+	private static int getWordCount(Gram word) {
+		int counts = 0;
+		HashMap<Gram, Integer> map = wordTowardsTagsCount.get(word);
+		for(int count : map.values())
+			counts += count;
 		
-		String wordFile = "E:\\wordCorpus.txt";
-		String tagFile = "E:\\tagCorpus.txt";
-		String wordTagFile = "E:\\wordTagCorpus.txt";
-//		AbstractGramSentenceStream wordStream = new StringGramSentenceStream(wordFile, "utf-8");
-//		AbstractGramSentenceStream tagStream = new StringGramSentenceStream(tagFile, "utf-8");
-		AbstractGramSentenceStream wordTagStream = new WordTagGramSentenceStream(wordTagFile, "utf-8");
+		return counts;
+	}
+	
+	/**
+	 * 返回训练语料中给定词性的数量
+	 * @param tag	给定的词性
+	 * @return		训练语料中给定词的数量
+	 */
+	private static int getTagCount(Gram tag) {
+		int counts = 0;
+		HashMap<Gram, Integer> map = tagTowardsWordsCount.get(tag);
+		for(int count : map.values())
+			counts += count;
 		
-//		NGramCounter wordCounter = new NGramCounter(wordStream, 3);
-//		NGramCounter tagGramCounter = new NGramCounter(tagStream, 4);
-		NGramCounter wordTagCounter = new NGramCounter(wordTagStream, 3);
-		long count = System.currentTimeMillis();
-		System.out.println("计数："+(count - start)+" ms");
+		return counts;
+	}
+	
+	/**
+	 * 返回训练语料中给定词被标记为给定词性的数量
+	 * @param word	给定的词
+	 * @param tag	给定的词性
+	 * @return		训练语料中给定词被标记为给定词性的数量
+	 */
+	private static int getTagCountByWord(Gram word, Gram tag) {
+		if(wordTowardsTagsCount.containsKey(word)) {
+			if(wordTowardsTagsCount.get(word).containsKey(tag))
+				return wordTowardsTagsCount.get(word).get(tag);
+		}
 		
-//		AbstractLanguageModelTrainer wordLMTrainer = new KneserNeyLanguageModelTrainer(wordCounter, 3);
-//		AbstractLanguageModelTrainer tagLMTrainer = new KatzLanguageModelTrainer(tagGramCounter, 4);
-		AbstractLanguageModelTrainer wordTagLMTrainer = new KneserNeyLanguageModelTrainer(wordTagCounter, 3);
-//		NGramLanguageModel wordLM = wordLMTrainer.trainModel();
-//		NGramLanguageModel tagLM = tagLMTrainer.trainModel();
-		NGramLanguageModel wordTagLM = wordTagLMTrainer.trainModel();
+		return 0;
+	}
+	
+	/**
+	 * 返回训练语料中给定词性其对应词为给定词的数量
+	 * @param word	给定的词
+	 * @param tag	给定的词性
+	 * @return		训练语料中给定词性其对应词为给定词的数量
+	 */
+	private static int getWordCountByTag(Gram tag, Gram word) {
+		if(tagTowardsWordsCount.containsKey(word)) {
+			if(tagTowardsWordsCount.get(word).containsKey(tag))
+				return tagTowardsWordsCount.get(word).get(tag);
+		}
 		
-		long lm = System.currentTimeMillis();
-		System.out.println("训练："+(lm - count)+" ms");
-		System.out.println("计数训练："+(lm - start)+" ms");
+		return 0;
+	}
+	
+	
+	/**
+	 * 加载序列化模型文件，得到n元模型
+	 * @param modelFile					待加载的模型文件
+	 * @return							n元模型
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
+	private static NGramLanguageModel loadNGramLM(String modelFile) throws ClassNotFoundException, IOException {
+		AbstractNGramModelReader modelReader;
+		if(modelFile.endsWith(".arpa"))
+			modelReader = new ARPATextFileNGramModleReader(new File(modelFile));
+		else if(modelFile.endsWith(".bin"))
+			modelReader = new BinaryFileNGramModelReader(new File(modelFile));
+		else if(modelFile.endsWith(".obj"))
+			modelReader = new ObjectFileNGramModelReader(new ObjectInputStream(new FileInputStream(new File(modelFile))));
+		else
+			modelReader = new TextFileNGramModelReader(new File(modelFile));
 		
-//		ARPATextFileNGramModleWriter wordWriter = new ARPATextFileNGramModleWriter(wordLM, "E:\\wordTrigram.arpa");
-//		ARPATextFileNGramModleWriter tagWriter = new ARPATextFileNGramModleWriter(tagLM, "E:\\tagTrigram.arpa");
-//		ARPATextFileNGramModleWriter wordTagWriter = new ARPATextFileNGramModleWriter(wordTagLM, "E:\\tagWordTrigram.arpa");
-		TextFileNGramModelWriter wordTagWriter = new TextFileNGramModelWriter(wordTagLM, "E:\\tagWordTrigram.arpa");
-//		wordWriter.persist();
-//		tagWriter.persist();
-		wordTagWriter.persist();
-		long write = System.currentTimeMillis();
-		System.out.println("写入："+(write - lm)+" ms");
-		System.out.println("计数训练写入："+(write - start)+" ms");
+		return modelReader.constructModel();
+	}
+	
+	/**
+	 * 统计训练语料中词与词性的数量以及
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	private static void statWordsAndTags(String path) throws IOException {
+		wordTowardsTagsCount = new HashMap<>();
+		tagTowardsWordsCount = new HashMap<>();
+		InputStreamReader iReader = new InputStreamReader(new FileInputStream(new File(path)));
+		BufferedReader reader = new BufferedReader(iReader);
 		
+		String line = null;
+		while((line = reader.readLine()) != null) {
+			String[] wordTags = line.trim().split("\\s+");
+			for(int i = 0; i < wordTags.length; i++) {
+				String[] wordTag = wordTags[i].split("/");
+				Gram word = new StringGram(wordTag[0]);
+				Gram tag = new StringGram(wordTag[1]);
+				
+				if(wordTowardsTagsCount.containsKey(word)) {
+					if(wordTowardsTagsCount.get(word).containsKey(tag)) 
+						wordTowardsTagsCount.get(word).put(tag, wordTowardsTagsCount.get(word).get(tag) + 1);
+					else {
+						HashMap<Gram, Integer> tagMap = new HashMap<>();
+						tagMap.put(tag, 1);
+						wordTowardsTagsCount.put(word, tagMap);
+					}
+				}else {
+					HashMap<Gram, Integer> tagMap = new HashMap<>();
+					tagMap.put(tag, 1);
+					wordTowardsTagsCount.put(word, tagMap);
+				}
+				
+				if(tagTowardsWordsCount.containsKey(tag)) {
+					if(tagTowardsWordsCount.get(tag).containsKey(word)) 
+						tagTowardsWordsCount.get(tag).put(tag, tagTowardsWordsCount.get(tag).get(word) + 1);
+					else {
+						HashMap<Gram, Integer> wordMap = new HashMap<>();
+						wordMap.put(word, 1);
+						tagTowardsWordsCount.put(tag, wordMap);
+					}
+				}else {
+					HashMap<Gram, Integer> wordMap = new HashMap<>();
+					wordMap.put(word, 1);
+					tagTowardsWordsCount.put(tag, wordMap);
+				}
+			}
+		}
+		reader.close();
+	}
+	
+	/**
+	 * 返回根据给定n元模型计算的序列的概率
+	 * @param sequence	给定的序列
+	 * @param lModel	给定的n元模型
+	 * @param order		指定n的大小
+	 * @param boundary	指定是否为序列加边界
+	 * @return			根据给定n元模型计算的序列的概率
+	 */
+	private static double calcSequenceProb(Gram[] sequence, NGramLanguageModel lModel, int n, boolean boundary) {		
+		if(sequence.length < 1 || sequence == null) {
+			System.out.println("给定序列元素为空");
+			System.exit(0);
+		}
 		
-//		NGram wordNGram = new NGram(new Gram[]{new StringGram("中国")});
-//		System.out.println(wordCounter.getNGramCount(wordNGram));
-//		System.out.println(wordLM.getNGramLogProbability(wordNGram));
-//		
-//		NGram tagNGram = new NGram(new Gram[]{new StringGram("<s>")});
-//		NGram ngram1 = new NGram(new Gram[]{new StringGram("Tg")});
-//		System.out.println(tagGramCounter.getNGramCount(tagNGram));
-//		System.out.println(tagLM.getNGramLogProbability(tagNGram));
-//		System.out.println(tagGramCounter.getTotalNGramCountByN(1));
-//		System.out.println(tagGramCounter.getNGramCount(ngram1));
+		//n大于模型的最高阶时，采用模型的最高阶
+		n = n > lModel.getOrder() ? lModel.getOrder() : n;
+		
+		return lModel.getSequenceLogProbability(sequence, n, boundary);
+	}
+	
+	/**
+	 * 返回P(T|W) = p(t1|w1)*p(t2|w2)*...*p(tn|wn)
+	 * @param words 给定词序列
+	 * @param tags	给定词性序列
+	 * @return		P(T|W)
+	 */
+	private static double calcTagsByWordsSequenceProb(Gram[] words, Gram[] tags) {
+		double prob = 1.0;
+		
+		if(words.length != tags.length) {
+			System.out.println("两个序列中的元素不等");
+			return 0;
+		}
+		
+//		for(int i = 0; i < words.length; i++) 
+//			prob *= (1.0 * getTagCountByWord(words[i], tags[i]) / getWordCount(words[i]));
+		for(int i = 0; i < words.length; i++) {
+			Gram word = words[i];
+			Gram tag = tags[i];
+			int N = getWordCount(word);
+			int n = getTagCountByWord(word, tag);
+			prob *= (1.0 * n / N);
+			
+			System.out.println(word+": "+N+"\t "+n);
+		}
+		return prob;
+	}
+	
+	/**
+	 * 返回P(W|T) = p(w1|t1)*p(w2|t2)*...*p(wn|tn)
+	 * @param tags	给定词性序列
+	 * @param words 给定词序列
+	 * @return		P(W|T)
+	 */
+	private static double calcWordsByTagsSequenceProb(Gram[] tags, Gram[] words) {
+		double prob = 1.0;
+		
+		if(tags.length != words.length) {
+			System.out.println("两个序列中的元素不等");
+			return 0;
+		}
+		
+		for(int i = 0; i < tags.length; i++) 
+			prob *= (1.0 * getWordCountByTag(tags[i], words[i]) / getTagCount(tags[i]));
+		
+		return prob;
+	}
+	
+	public static void main(String[] args) throws ClassNotFoundException, IOException {
+//		wordLM = loadNGramLM("E:\\wordLM.bin");
+//		tagLM = loadNGramLM("E:\\tagLM.bin");
+//		wordTagLM = loadNGramLM("E:\\wordTagLM.obj");
+		statWordsAndTags("E:\\wordTagCorpus.txt");
+		
+		Gram[] wordSequence = new Gram[]{new StringGram("年轻人"), new StringGram("是"),
+				 new StringGram("中国"), new StringGram("的"), new StringGram("希望")};
+		Gram[] tagSequence = new Gram[]{new StringGram("n"), new StringGram("v"),
+				 new StringGram("ns"), new StringGram("u"), new StringGram("n")};
+		Gram[] wordTagSequence = new Gram[]{new WordTagGram("年轻人", "n"), new WordTagGram("是", "v"),
+				 new WordTagGram("中国", "ns"), new WordTagGram("的", "u"), new WordTagGram("希望", "n")};
+		
+//		System.out.println(calcSequenceProb(wordSequence, wordLM, 3, true));
+//		System.out.println(calcSequenceProb(tagSequence, tagLM, 4, true));
+//		System.out.println(calcSequenceProb(wordTagSequence, wordTagLM, 3, true));
+		System.out.println(calcTagsByWordsSequenceProb(wordSequence, tagSequence));
+		System.out.println(calcWordsByTagsSequenceProb(tagSequence, wordSequence));
 	}
 }

@@ -1,7 +1,6 @@
 package hust.tools.ngram.io;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import hust.tools.ngram.model.AbstractNGramModelWriter;
@@ -69,7 +68,7 @@ public abstract class NGramModelWriter extends AbstractNGramModelWriter{
 		 * 根据n元长度从小到大，写入所有n元及其概率
 		 */
 		for(int i = 0; i < nGramTypes.length; i++) {
-			Arrays.sort(nGramTypes[i]);	//对n元进行排序
+//			Arrays.sort(nGramTypes[i]);	//对n元进行排序
 			
 			for(int j = 0; j < nGramTypes[i].length; j++) {
 				NGramModelEntry modelEntry;

@@ -27,14 +27,14 @@ public interface LanguageModel {
 	 * @param sequence 给定的元组序列，以求概率最大的下一个元
 	 * @return 给定元组序列概率最大的下一个元
 	 */
-	NGram getNextPrediction(Gram[] sequence, int n);
+	NGram getNextPrediction(Gram[] sequence, int n, boolean boundary);
 	
 	/**
 	 * 返回给定元组序列概率的对数
 	 * @param sequece 待求概率对数的元组序列
 	 * @return 给定元组序列概率的对数
 	 */
-	double getSequenceLogProbability(Gram[] sequece, int n);
+	double getSequenceLogProbability(Gram[] sequece, int n, boolean boundary);
 	
 	/**
 	 * 计算语言模型在给定测试集上的困惑度
@@ -42,5 +42,5 @@ public interface LanguageModel {
 	 * @param n				采用n元模型
 	 * @return				困惑度大小
 	 */
-	double getPerplexity(List<Gram[]> testCorpus, int n);
+	double getPerplexity(List<Gram[]> testCorpus, int n, boolean boundary);
 }

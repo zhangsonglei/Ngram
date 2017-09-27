@@ -28,7 +28,7 @@ public class NGramLM {
 		NGramLanguageModel model = loadModel(modelFile);
 		Gram[] grams = parseGrams(sentence);
 		
-		return model.getSequenceLogProbability(grams, n);
+		return model.getSequenceLogProbability(grams, n, true);
 	}
 	
 	/**
@@ -43,7 +43,7 @@ public class NGramLM {
 		NGramLanguageModel model = loadModel(modelFile);
 		Gram[] grams = parseGrams(sentence);
 		
-		return model.getNextPrediction(grams, n).toString();
+		return model.getNextPrediction(grams, n, true).toString();
 	}
 	
 	/**
@@ -66,7 +66,7 @@ public class NGramLM {
 			test.add(grams);
 		}
 		
-		double perplexity = model.getPerplexity(test, order);	
+		double perplexity = model.getPerplexity(test, order, true);	
 		return perplexity;
 	}
 	
