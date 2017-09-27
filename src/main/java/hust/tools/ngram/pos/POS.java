@@ -93,9 +93,9 @@ public class POS {
 	 * @return		训练语料中给定词性其对应词为给定词的数量
 	 */
 	private static int getWordCountByTag(Gram tag, Gram word) {
-		if(tagTowardsWordsCount.containsKey(word)) {
-			if(tagTowardsWordsCount.get(word).containsKey(tag))
-				return tagTowardsWordsCount.get(word).get(tag);
+		if(tagTowardsWordsCount.containsKey(tag)) {
+			if(tagTowardsWordsCount.get(tag).containsKey(word))
+				return tagTowardsWordsCount.get(tag).get(word);
 		}
 		
 		return 0;
@@ -146,11 +146,8 @@ public class POS {
 				if(wordTowardsTagsCount.containsKey(word)) {
 					if(wordTowardsTagsCount.get(word).containsKey(tag)) 
 						wordTowardsTagsCount.get(word).put(tag, wordTowardsTagsCount.get(word).get(tag) + 1);
-					else {
-						HashMap<Gram, Integer> tagMap = new HashMap<>();
-						tagMap.put(tag, 1);
-						wordTowardsTagsCount.put(word, tagMap);
-					}
+					else 
+						wordTowardsTagsCount.get(word).put(tag, 1);		
 				}else {
 					HashMap<Gram, Integer> tagMap = new HashMap<>();
 					tagMap.put(tag, 1);
@@ -159,12 +156,9 @@ public class POS {
 				
 				if(tagTowardsWordsCount.containsKey(tag)) {
 					if(tagTowardsWordsCount.get(tag).containsKey(word)) 
-						tagTowardsWordsCount.get(tag).put(tag, tagTowardsWordsCount.get(tag).get(word) + 1);
-					else {
-						HashMap<Gram, Integer> wordMap = new HashMap<>();
-						wordMap.put(word, 1);
-						tagTowardsWordsCount.put(tag, wordMap);
-					}
+						tagTowardsWordsCount.get(tag).put(word, tagTowardsWordsCount.get(tag).get(word) + 1);
+					else 
+						tagTowardsWordsCount.get(tag).put(word, 1);
 				}else {
 					HashMap<Gram, Integer> wordMap = new HashMap<>();
 					wordMap.put(word, 1);
@@ -209,8 +203,6 @@ public class POS {
 			return 0;
 		}
 		
-//		for(int i = 0; i < words.length; i++) 
-//			prob *= (1.0 * getTagCountByWord(words[i], tags[i]) / getWordCount(words[i]));
 		for(int i = 0; i < words.length; i++) {
 			Gram word = words[i];
 			Gram tag = tags[i];
@@ -218,7 +210,7 @@ public class POS {
 			int n = getTagCountByWord(word, tag);
 			prob *= (1.0 * n / N);
 			
-			System.out.println(word+": "+N+"\t "+n);
+//			System.out.println(word+":"+N+"\t\t"+word+"/"+tag+":"+n);
 		}
 		return prob;
 	}
@@ -237,16 +229,22 @@ public class POS {
 			return 0;
 		}
 		
-		for(int i = 0; i < tags.length; i++) 
-			prob *= (1.0 * getWordCountByTag(tags[i], words[i]) / getTagCount(tags[i]));
-		
+		for(int i = 0; i < words.length; i++) {
+			Gram word = words[i];
+			Gram tag = tags[i];
+			int N = getTagCount(tag);
+			int n = getWordCountByTag(tag, word);
+			prob *= (1.0 * n / N);
+			
+//			System.out.println(tag+":"+N+"\t\t"+tag+"/"+word+":"+n);
+		}
 		return prob;
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, IOException {
-//		wordLM = loadNGramLM("E:\\wordLM.bin");
-//		tagLM = loadNGramLM("E:\\tagLM.bin");
-//		wordTagLM = loadNGramLM("E:\\wordTagLM.obj");
+		wordLM = loadNGramLM("E:\\wordLM.bin");
+		tagLM = loadNGramLM("E:\\tagLM.bin");
+		wordTagLM = loadNGramLM("E:\\wordTagLM.obj");
 		statWordsAndTags("E:\\wordTagCorpus.txt");
 		
 		Gram[] wordSequence = new Gram[]{new StringGram("年轻人"), new StringGram("是"),
@@ -256,9 +254,9 @@ public class POS {
 		Gram[] wordTagSequence = new Gram[]{new WordTagGram("年轻人", "n"), new WordTagGram("是", "v"),
 				 new WordTagGram("中国", "ns"), new WordTagGram("的", "u"), new WordTagGram("希望", "n")};
 		
-//		System.out.println(calcSequenceProb(wordSequence, wordLM, 3, true));
-//		System.out.println(calcSequenceProb(tagSequence, tagLM, 4, true));
-//		System.out.println(calcSequenceProb(wordTagSequence, wordTagLM, 3, true));
+		System.out.println(calcSequenceProb(wordSequence, wordLM, 3, true));
+		System.out.println(calcSequenceProb(tagSequence, tagLM, 4, true));
+		System.out.println(calcSequenceProb(wordTagSequence, wordTagLM, 3, true));
 		System.out.println(calcTagsByWordsSequenceProb(wordSequence, tagSequence));
 		System.out.println(calcWordsByTagsSequenceProb(tagSequence, wordSequence));
 	}
