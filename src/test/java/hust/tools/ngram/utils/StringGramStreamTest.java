@@ -29,7 +29,7 @@ public class StringGramStreamTest {
 	
 	@Before
 	public void setup() throws IOException  {
-		String filePath = "files\\corpus\\testCorpus.txt";
+		String filePath = "src\\test\\java\\hust\\tools\\ngram\\utils\\testCorpus.txt";
 		encoding = "utf-8";
 		sGramStream = new StringGramStream(filePath, encoding);
 		

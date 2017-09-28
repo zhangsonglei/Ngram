@@ -45,11 +45,11 @@ public class NGramCountWriterAndReaderTest {
 	public void testTextFileNGramCountWriterAndReader() throws IOException, ClassNotFoundException {
 		//写入文件
 		TextFileNGramCountWriter tFNGramCountWriter = new TextFileNGramCountWriter(trainNGramCounter, 
-				new File("files\\count\\TestIO_trigramCount.txt"));
+				new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_trigramCount.txt"));
 		tFNGramCountWriter.persist();
 		
 		//读取文件
-		TextFileNGramCountReader reader = new TextFileNGramCountReader(new File("files\\count\\TestIO_trigramCount.txt"));
+		TextFileNGramCountReader reader = new TextFileNGramCountReader(new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_trigramCount.txt"));
 		loadNGramCounter = reader.constructNGramCount();
 		
 		//判断读写
@@ -65,11 +65,11 @@ public class NGramCountWriterAndReaderTest {
 	public void testObjectFileNGramCountWriterAndReader() throws IOException, ClassNotFoundException {
 		//写入文件
 		ObjectFileNGramCountWriter oFNGramCountWriter = new ObjectFileNGramCountWriter(trainNGramCounter, 
-				new File("files\\count\\TestIO_objectCount.out"));
+				new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_objectCount.out"));
 		oFNGramCountWriter.persist();
 		
 		//读取文件
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("files\\count\\TestIO_objectCount.out")));
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_objectCount.out")));
 		ObjectFileNGramCountReader reader = new ObjectFileNGramCountReader(ois);
 		loadNGramCounter = reader.constructNGramCount();
 		
@@ -86,11 +86,11 @@ public class NGramCountWriterAndReaderTest {
 	public void testBinaryFileNGramCountWriterAndReader() throws IOException, ClassNotFoundException {
 		//写入文件
 		BinaryFileNGramCountWriter bFNGramCountWriter = new BinaryFileNGramCountWriter(trainNGramCounter, 
-				new File("files\\count\\TestIO_binaryCount.bin"));
+				new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_binaryCount.bin"));
 		bFNGramCountWriter.persist();
 		
 		//读取文件
-		BinaryFileNGramCountReader reader = new BinaryFileNGramCountReader(new File("files\\count\\TestIO_binaryCount.bin"));
+		BinaryFileNGramCountReader reader = new BinaryFileNGramCountReader(new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_binaryCount.bin"));
 		loadNGramCounter = reader.constructNGramCount();
 		
 		//判断读写

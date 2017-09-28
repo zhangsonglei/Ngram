@@ -29,7 +29,7 @@ public class StringGramSentenceStreamTest {
 	
 	@Before
 	public void setup() throws IOException  {
-		String filePath = "files\\corpus\\testCorpus.txt";
+		String filePath = "src\\test\\java\\hust\\tools\\ngram\\utils\\testCorpus.txt";
 		encoding = "utf-8";
 		sGramStream = new StringGramSentenceStream(filePath, encoding);
 		
@@ -56,12 +56,6 @@ public class StringGramSentenceStreamTest {
 		while((grams = sGramStream.next()) != null) {
 			String[] strings = list.get(index++).replaceAll("\\s+", "").split("");
 			assertEquals(grams.length, strings.length);
-
-//			assertEquals(grams[0], new StringGram("<S>"));
-//			assertEquals(grams[grams.length - 1], new StringGram("</S>"));
-//			
-//			for(int i = 0; i < strings.length; i++)
-//				assertEquals(grams[i+1], new StringGram(strings[i]));
 			for(int i = 0; i < strings.length; i++)
 				assertEquals(grams[i], new StringGram(strings[i]));
 		}

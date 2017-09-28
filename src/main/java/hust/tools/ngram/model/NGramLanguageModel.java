@@ -91,7 +91,7 @@ public class NGramLanguageModel implements LanguageModel {
 			for(NGram nGram : nGrams)
 				probability += getNGramLogProbability(nGram);
 			
-			if (Double.isNaN(probability))
+			if (Double.isNaN(probability) || Double.isInfinite(probability))
 				probability = 0.0;
 			else if (probability != 0)
 				probability = Math.pow(10, probability);
@@ -201,7 +201,7 @@ public class NGramLanguageModel implements LanguageModel {
 
 		if(smoothing.equals("ml")) {
 			//直接返回0
-			return 0.0;
+			return Math.log10(0);
 		}else if(smoothing.equals("interpolate")) {
 			if(1 == nGram.length())
 				return getNGramLogProbability(PseudoWord.oovNGram);

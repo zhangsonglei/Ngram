@@ -54,11 +54,11 @@ public class NGramModelWriterAndReaderTest {
 	public void testARPATextFileNGramModleWriterAndReader() throws IOException, ClassNotFoundException {
 		//写入模型
 		ARPATextFileNGramModleWriter arpaNGramModelWiter = new ARPATextFileNGramModleWriter(trainModel, 
-				new File("files\\lm\\TestIO_arpa_trigram.lm"));
+				new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_arpa_trigram.lm"));
 		arpaNGramModelWiter.persist();
 		
 		//读取模型
-		File file = new File("files\\lm\\TestIO_arpa_trigram.lm");
+		File file = new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_arpa_trigram.lm");
 		ARPATextFileNGramModleReader reader = new ARPATextFileNGramModleReader(file);
 		loadModel = reader.constructModel();
 		
@@ -75,11 +75,11 @@ public class NGramModelWriterAndReaderTest {
 	public void testTextFileNGramModleWriterAndReader() throws IOException, ClassNotFoundException {
 		//写入模型
 		TextFileNGramModelWriter tFNGramModelWiter = new TextFileNGramModelWriter(trainModel, 
-				new File("files\\lm\\TestIO_trigramModel.txt"));
+				new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_trigramModel.txt"));
 		tFNGramModelWiter.persist();
 		
 		//读取模型
-		File file = new File("files\\lm\\TestIO_trigramModel.txt");
+		File file = new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_trigramModel.txt");
 		TextFileNGramModelReader reader = new TextFileNGramModelReader(file);
 		loadModel = reader.constructModel();
 		
@@ -95,12 +95,12 @@ public class NGramModelWriterAndReaderTest {
 	@Test
 	public void testObjectFileNGramModleWriterAndReader() throws IOException, ClassNotFoundException {
 		//写入模型
-		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("files\\lm\\TestIO_objectModel.out")));
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_objectModel.out")));
 		ObjectFileNGramModelWriter oFNGramModelWriter = new ObjectFileNGramModelWriter(trainModel, oos);
 		oFNGramModelWriter.persist();
 				
 		//读取模型
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("files\\lm\\TestIO_objectModel.out")));
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_objectModel.out")));
 		ObjectFileNGramModelReader reader = new ObjectFileNGramModelReader(ois);
 		loadModel = reader.constructModel();
 				
@@ -117,11 +117,11 @@ public class NGramModelWriterAndReaderTest {
 	public void testBinaryFileNGramModleWriterAndReader() throws IOException, ClassNotFoundException {
 		//写入模型
 		BinaryFileNGramModelWriter bFNGramModelWiter = new BinaryFileNGramModelWriter(trainModel, 
-				new File("files\\lm\\TestIO_binaryModel.bin"));
+				new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_binaryModel.bin"));
 		bFNGramModelWiter.persist();
 		
 		//读取模型
-		File file = new File("files\\lm\\TestIO_binaryModel.bin");
+		File file = new File("src\\test\\java\\hust\\tools\\ngram\\io\\TestIO_binaryModel.bin");
 		BinaryFileNGramModelReader reader = new BinaryFileNGramModelReader(file);
 		loadModel = reader.constructModel();
 		

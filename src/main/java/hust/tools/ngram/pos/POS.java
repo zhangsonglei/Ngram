@@ -28,10 +28,10 @@ public class POS {
 	 */
 	private static NGramLanguageModel tagLM;
 	
-	/**
-	 * 基于词及其词性的tri-gram模型
-	 */
-	private static NGramLanguageModel wordTagLM;
+//	/**
+//	 * 基于词及其词性的tri-gram模型
+//	 */
+//	private static NGramLanguageModel wordTagLM;
 	
 	/**
 	 * 统计训练语料中每个词的词频
@@ -209,9 +209,8 @@ public class POS {
 			int N = getWordCount(word);
 			int n = getTagCountByWord(word, tag);
 			prob *= (1.0 * n / N);
-			
-//			System.out.println(word+":"+N+"\t\t"+word+"/"+tag+":"+n);
 		}
+		
 		return prob;
 	}
 	
@@ -235,29 +234,58 @@ public class POS {
 			int N = getTagCount(tag);
 			int n = getWordCountByTag(tag, word);
 			prob *= (1.0 * n / N);
-			
-//			System.out.println(tag+":"+N+"\t\t"+tag+"/"+word+":"+n);
 		}
+		
 		return prob;
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, IOException {
 		wordLM = loadNGramLM("E:\\wordLM.bin");
 		tagLM = loadNGramLM("E:\\tagLM.bin");
-		wordTagLM = loadNGramLM("E:\\wordTagLM.obj");
+//		wordTagLM = loadNGramLM("E:\\wordTagLM.obj");
 		statWordsAndTags("E:\\wordTagCorpus.txt");
 		
 		Gram[] wordSequence = new Gram[]{new StringGram("年轻人"), new StringGram("是"),
-				 new StringGram("中国"), new StringGram("的"), new StringGram("希望")};
-		Gram[] tagSequence = new Gram[]{new StringGram("n"), new StringGram("v"),
-				 new StringGram("ns"), new StringGram("u"), new StringGram("n")};
-		Gram[] wordTagSequence = new Gram[]{new WordTagGram("年轻人", "n"), new WordTagGram("是", "v"),
-				 new WordTagGram("中国", "ns"), new WordTagGram("的", "u"), new WordTagGram("希望", "n")};
+				 new StringGram("中国"), new StringGram("的"), new StringGram("希望")};		//正确: 年轻人/是/中国/的/希望
 		
-		System.out.println(calcSequenceProb(wordSequence, wordLM, 3, true));
-		System.out.println(calcSequenceProb(tagSequence, tagLM, 4, true));
-		System.out.println(calcSequenceProb(wordTagSequence, wordTagLM, 3, true));
-		System.out.println(calcTagsByWordsSequenceProb(wordSequence, tagSequence));
-		System.out.println(calcWordsByTagsSequenceProb(tagSequence, wordSequence));
+		Gram[] wordSequence1 = new Gram[]{new StringGram("年轻人"), new StringGram("是"),
+				 new StringGram("中"), new StringGram("国的"), new StringGram("希望")};		//错误1：年轻人/是/中/国的/希望
+		Gram[] wordSequence2 = new Gram[]{new StringGram("年轻人"), new StringGram("是中"),
+				 new StringGram("国"), new StringGram("的"), new StringGram("希望")};		//错误2：年轻人/是中/国/的/希望
+		Gram[] wordSequence3 = new Gram[]{new StringGram("年轻"), new StringGram("人是"),
+				 new StringGram("中国"), new StringGram("的"), new StringGram("希望")};		//错误3：年轻/人是/中国/的/希望
+		Gram[] wordSequence4 = new Gram[]{new StringGram("年轻"),new StringGram("人"), new StringGram("是"),
+				 new StringGram("中国"), new StringGram("的"), new StringGram("希望")};		//错误4：年轻/人/是/中/国的/希望
+		
+		Gram[] tagSequence = new Gram[]{new StringGram("n"), new StringGram("v"),
+				 new StringGram("ns"), new StringGram("u"), new StringGram("n")};	//正确
+		
+		Gram[] tagSequence1 = new Gram[]{new StringGram("v"), new StringGram("v"),
+				 new StringGram("ns"), new StringGram("u"), new StringGram("n")};	//错误1 n-->v
+		Gram[] tagSequence2 = new Gram[]{new StringGram("a"), new StringGram("v"),
+				 new StringGram("ns"), new StringGram("u"), new StringGram("n")};	//错误2 n-->a
+		Gram[] tagSequence3 = new Gram[]{new StringGram("n"), new StringGram("v"),
+				 new StringGram("nr"), new StringGram("u"), new StringGram("n")};	//错误3 ns-->nr
+		Gram[] tagSequence4 = new Gram[]{new StringGram("a"), new StringGram("v"),
+				 new StringGram("ns"), new StringGram("u"), new StringGram("v")};	//错误4 n-->a, n-->v
+//		Gram[] wordTagSequence = new Gram[]{new WordTagGram("年轻人", "n"), new WordTagGram("是", "v"),
+//				 new WordTagGram("中国", "ns"), new WordTagGram("的", "u"), new WordTagGram("希望", "n")};
+		
+		System.out.println("正确词串："+calcSequenceProb(wordSequence, wordLM, 3, true));
+		System.out.println("错误词串1："+calcSequenceProb(wordSequence1, wordLM, 3, true));
+		System.out.println("错误词串2："+calcSequenceProb(wordSequence2, wordLM, 3, true));
+		System.out.println("错误词串3："+calcSequenceProb(wordSequence3, wordLM, 3, true));
+		System.out.println("错误词串4："+calcSequenceProb(wordSequence4, wordLM, 3, true));
+
+		
+		System.out.println("\n正确词性："+calcSequenceProb(tagSequence, tagLM, 4, true));
+		System.out.println("错误词性串1："+calcSequenceProb(tagSequence1, tagLM, 4, true));
+		System.out.println("错误词性串2："+calcSequenceProb(tagSequence2, tagLM, 4, true));
+		System.out.println("错误词性串3："+calcSequenceProb(tagSequence3, tagLM, 4, true));
+		System.out.println("错误词性串4："+calcSequenceProb(tagSequence4, tagLM, 4, true));
+
+//		System.out.println(calcSequenceProb(wordTagSequence, wordTagLM, 3, true));
+		System.out.println("\nP(T|W)："+ calcTagsByWordsSequenceProb(wordSequence, tagSequence));
+		System.out.println("P(W|T)："+ calcWordsByTagsSequenceProb(tagSequence, wordSequence));
 	}
 }

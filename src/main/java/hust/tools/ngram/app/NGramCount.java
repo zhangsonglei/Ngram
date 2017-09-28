@@ -34,6 +34,8 @@ public class NGramCount {
 	 */
 	public static void getCounterFile(GramStream stream, int order, String countFile, String type) throws IOException {		
 		NGramCounter counter = new NGramCounter(stream, order);
+		
+		System.out.println(counter.iterator());
 		writeCounter(counter, countFile, type);
 	}
 	

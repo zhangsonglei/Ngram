@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
+import hust.tools.ngram.io.ARPATextFileNGramModleWriter;
 import hust.tools.ngram.io.BinaryFileNGramModelWriter;
 import hust.tools.ngram.io.ObjectFileNGramModelWriter;
 import hust.tools.ngram.model.AbstractLanguageModelTrainer;
@@ -16,6 +17,7 @@ import hust.tools.ngram.model.NGramLanguageModel;
 import hust.tools.ngram.utils.AbstractGramSentenceStream;
 import hust.tools.ngram.utils.StringGramSentenceStream;
 
+@SuppressWarnings("unused")
 public class LMTrainer {
 	
 	public static void main(String[] args) throws IOException {		

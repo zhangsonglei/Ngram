@@ -249,11 +249,11 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 				if(countOfCounts.get(1).containsKey(i)) {
 					n1 = countOfCounts.get(1).get(i);	
 				}else {
-					System.out.println("discount: 1_"+i+" is null");
+					System.out.println("出现次数为1的"+i+"元为0，训练终止");
 					System.exit(0);
 				}
 			}else {
-				System.out.println("discount: 1 is null");
+				System.out.println("没有出现1次的n元，训练终止");
 				System.exit(0);
 			}
 			
@@ -262,11 +262,11 @@ public class KneserNeyLanguageModelTrainer extends AbstractLanguageModelTrainer{
 				if(countOfCounts.get(2).containsKey(i)) {
 					n2 = countOfCounts.get(2).get(i);
 				}else {
-					System.out.println("discount: 1_"+i+" is null");
+					System.out.println("出现次数为2的"+i+"元为0，训练终止");
 					System.exit(0);
 				}
 			}else {
-				System.out.println("discount: 2 is null");
+				System.out.println("没有出现2次的n元，训练终止");
 				System.exit(0);
 			}
 					
