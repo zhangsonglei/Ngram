@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import hust.tools.ngram.io.BinaryFileNGramCountWriter;
-import hust.tools.ngram.io.NGramCountWriter;
 import hust.tools.ngram.io.ObjectFileNGramCountWriter;
 import hust.tools.ngram.io.TextFileNGramCountWriter;
+import hust.tools.ngram.model.NGramCountWriter;
 import hust.tools.ngram.model.NGramCounter;
 import hust.tools.ngram.utils.GramSentenceStream;
 import hust.tools.ngram.utils.GramStream;

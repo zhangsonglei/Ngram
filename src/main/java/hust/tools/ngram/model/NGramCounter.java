@@ -272,7 +272,7 @@ public class NGramCounter {
 	 */
 	private void statisticsSentenceNGram(GramSentenceStream gramSentenceStream) throws IOException {
 		Gram[] grams = null;
-		while((grams = gramSentenceStream.next())!=null) {
+		while((grams = gramSentenceStream.nextSentence())!=null) {
 			Gram[] sentence = new Gram[grams.length + 2];
 			sentence[0] = PseudoWord.Start;
 			for(int i = 0; i < grams.length; i++)

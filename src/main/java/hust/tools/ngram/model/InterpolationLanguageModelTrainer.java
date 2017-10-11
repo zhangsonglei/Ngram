@@ -30,6 +30,7 @@ public class InterpolationLanguageModelTrainer extends AbstractLanguageModelTrai
 	
 	public InterpolationLanguageModelTrainer(GramStream gramStream, int  order) throws IOException {
 		super(gramStream, order);
+		held_out = new NGramCounter(gramStream, n);
 	}
 	
 	public InterpolationLanguageModelTrainer(GramStream gramStream, GramStream held, int  order) throws IOException {
@@ -44,6 +45,7 @@ public class InterpolationLanguageModelTrainer extends AbstractLanguageModelTrai
 
 	public InterpolationLanguageModelTrainer(NGramCounter nGramCounter, int order) throws IOException {
 		super(nGramCounter, order);
+		held_out = nGramCounter;
 	}
 	
 	public InterpolationLanguageModelTrainer(NGramCounter nGramCounter, GramStream held, int order) throws IOException {

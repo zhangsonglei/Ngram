@@ -93,7 +93,7 @@ public class Vocabulary {
 	 */
 	private void establishVocab(GramSentenceStream stream) throws IOException {
 		Gram[] grams = null;
-		while((grams = stream.next()) != null) {
+		while((grams = stream.nextSentence()) != null) {
 			for(Gram gram : grams)
 				if(!vocabulary.contains(gram))
 					add(gram);

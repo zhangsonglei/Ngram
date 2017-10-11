@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
+import hust.tools.ngram.model.AbstractNGramCountWriter;
 import hust.tools.ngram.model.NGramCounter;
 import hust.tools.ngram.utils.NGramCountEntry;
 
@@ -17,7 +18,7 @@ import hust.tools.ngram.utils.NGramCountEntry;
  *<li>Date: 2017年7月27日
  *</ul>
  */
-public class ObjectFileNGramCountWriter extends NGramCountWriter {
+public class ObjectFileNGramCountWriter extends AbstractNGramCountWriter {
 
 	ObjectOutputStream oos;
 	

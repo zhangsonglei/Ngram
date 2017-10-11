@@ -53,7 +53,7 @@ public class StringGramSentenceStreamTest {
 	public void testNext() throws IOException{
 		Gram[] grams = null;
 		int index = 0;
-		while((grams = sGramStream.next()) != null) {
+		while((grams = sGramStream.nextSentence()) != null) {
 			String[] strings = list.get(index++).replaceAll("\\s+", "").split("");
 			assertEquals(grams.length, strings.length);
 			for(int i = 0; i < strings.length; i++)

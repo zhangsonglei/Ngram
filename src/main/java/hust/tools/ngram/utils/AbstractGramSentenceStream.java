@@ -27,7 +27,7 @@ public abstract class AbstractGramSentenceStream implements GramSentenceStream{
 	/**
 	 * 每次读取的行数
 	 */
-	private final int  slide_length = 1000;
+	private final int  slide_length = 10000;
 	
 	/**
 	 * 流式读取的迭代器
@@ -53,11 +53,11 @@ public abstract class AbstractGramSentenceStream implements GramSentenceStream{
 	}
 
 	/**
-	 * 读取从流中下一个元，重复调用该方法直到返回null，每次从底层源中返回一个元
+	 * 从流中读取下一个元，重复调用该方法直到返回null，每次从底层源中返回一个元
 	 * @return 下一个元
 	 * @throws IOException 如果读取过程中出错，抛出异常
 	 */
-	public final Gram[] next() throws IOException {
+	public final Gram[] nextSentence() throws IOException {
 
 		if (grams.hasNext()) {
 			return grams.next();
@@ -80,7 +80,7 @@ public abstract class AbstractGramSentenceStream implements GramSentenceStream{
 				grams = createGrams(lines);
 
 			if (grams.hasNext()) {
-				return next();
+				return nextSentence();
 			}
 		}
 
@@ -96,5 +96,10 @@ public abstract class AbstractGramSentenceStream implements GramSentenceStream{
 	@Override
 	public void close() throws IOException {
 		bufferedReader.close();
+	}
+	
+	@Override
+	public Gram next() throws IOException {
+		return null;
 	}
 }
