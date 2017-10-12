@@ -20,10 +20,6 @@ import hust.tools.ngram.utils.NGramModelEntry;
  */
 public abstract class AbstractNGramModelWriter {
 	
-	public AbstractNGramModelWriter() {
-		super();
-	}
-	
 	/**
 	 * 统计给定n元长度的所有n元类型
 	 * @param map	n元与其概率的映射
