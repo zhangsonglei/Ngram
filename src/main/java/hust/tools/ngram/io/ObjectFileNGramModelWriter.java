@@ -3,6 +3,7 @@ package hust.tools.ngram.io;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
+import hust.tools.ngram.model.AbstractNGramModelWriter;
 import hust.tools.ngram.model.NGramLanguageModel;
 import hust.tools.ngram.utils.NGramModelEntry;
 
@@ -14,7 +15,7 @@ import hust.tools.ngram.utils.NGramModelEntry;
  *<li>Date: 2017年7月27日
  *</ul>
  */
-public class ObjectFileNGramModelWriter extends NGramModelWriter {
+public class ObjectFileNGramModelWriter extends AbstractNGramModelWriter {
 	
 	ObjectOutputStream dos;
 	

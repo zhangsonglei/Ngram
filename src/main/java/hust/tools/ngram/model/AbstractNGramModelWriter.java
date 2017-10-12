@@ -1,6 +1,7 @@
 package hust.tools.ngram.model;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,15 +19,44 @@ import hust.tools.ngram.utils.NGramModelEntry;
  *<li>Date: 2017年7月25日
  *</ul>
  */
-public abstract class AbstractNGramModelWriter {
+public abstract class AbstractNGramModelWriter implements NGramModelWriter{
 	
+	private int n;
+	
+	private String smooth;
+	
+	private HashMap<NGram, ARPAEntry> nGramLogProbability;
+	
+	private NGram[][] nGramTypes;
+	
+	public AbstractNGramModelWriter() {
+		super();
+	}
+		
+	public AbstractNGramModelWriter(NGramLanguageModel languageModel) {
+		n = languageModel.getOrder();
+		smooth = languageModel.getSmooth();
+		nGramLogProbability = languageModel.getnGramLogProbability();
+		
+		statNGramTypeAndCount();
+	}
+	
+	/**
+	 * 统计n元类型和n元类型数
+	 */
+	private void statNGramTypeAndCount() {
+		nGramTypes = new NGram[n][];
+		for(int i = 0; i < n; i++) 
+			nGramTypes[i] = statTypeAndCount(nGramLogProbability, i + 1);
+	}
+
 	/**
 	 * 统计给定n元长度的所有n元类型
 	 * @param map	n元与其概率的映射
 	 * @param n		n元长度
 	 * @return		给定n元长度下的所有n元类型
 	 */
-	public NGram[] statTypeAndCount(HashMap<NGram, ARPAEntry> map, int n) {
+	protected NGram[] statTypeAndCount(HashMap<NGram, ARPAEntry> map, int n) {
 		Set<NGram> nGrams = map.keySet();
 		List<NGram> list = new LinkedList<>();
 		
@@ -37,36 +67,48 @@ public abstract class AbstractNGramModelWriter {
 		return list.toArray(new NGram[list.size()]);
 	}
 	
-	/**
-	 * 写入n元及其概率 
-	 * @param entry 待写入的条目
-	 * @throws IOException
-	 */
-	public abstract void writeNGramModelEntry(NGramModelEntry entry) throws IOException;
-	
-	/**
-	 * 写入字符串
-	 * @param string 待写入的字符串
-	 * @throws IOException
-	 */
-	public abstract void writeUTF(String string) throws IOException;
-	
-	/**
-	 * 写入n元数量 
-	 * @param i n元的数量
-	 * @throws IOException
-	 */
-	public abstract void writeCount(int count) throws IOException;
-	
-	/**
-	 * 关闭写入流  
-	 * @throws IOException
-	 */
-	public abstract void close() throws IOException;
-
-	/**
-	 * 保存模型 ，执行此方法后将自动关闭写入流
-	 * @throws IOException
-	 */
-	public abstract void persist() throws IOException;
+	@Override
+	public void persist() throws IOException {
+		
+		/**
+		 * 写入平滑类型
+		 */
+		writeUTF(smooth);					
+		
+		/**
+		 * 写入n元的最大长度
+		 */
+		writeCount(nGramTypes.length);					
+		
+		/**
+		 * 写入不同长度n元类型的数量
+		 */
+		for(int i = 0; i < nGramTypes.length; i++) { 	
+			writeCount(nGramTypes[i].length);
+		}
+		
+		/**
+		 * 根据n元长度从小到大，写入所有n元及其概率
+		 */
+		for(int i = 0; i < nGramTypes.length; i++) {
+			Arrays.sort(nGramTypes[i]);	//对n元进行排序
+			
+			for(int j = 0; j < nGramTypes[i].length; j++) {
+				NGramModelEntry modelEntry;
+				NGram nGram = nGramTypes[i][j];
+				ARPAEntry entry = nGramLogProbability.get(nGram);
+				double log_prob = entry.getLog_prob();
+				double log_bo = entry.getLog_bo();
+				
+				if(0.0 == log_bo)
+					modelEntry = new NGramModelEntry(log_prob, nGram);
+				else
+					modelEntry = new NGramModelEntry(log_prob, nGram, log_bo);
+				
+				writeNGramModelEntry(modelEntry);
+			}
+		}
+		
+		close();
+	}
 }

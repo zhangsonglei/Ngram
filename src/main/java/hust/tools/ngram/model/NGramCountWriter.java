@@ -5,7 +5,7 @@ import hust.tools.ngram.utils.NGramCountEntry;
 
 /**
  *<ul>
- *<li>Description: 写n元计数到文件的抽象类，实现写入方法 
+ *<li>Description: 写n元计数到文件的接口
  *<li>Company: HUST
  *<li>@author Sonly
  *<li>Date: 2017年7月27日

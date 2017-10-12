@@ -164,7 +164,7 @@ public class NGramLMTrain {
 		int len = args.length;
 		if(7 != len) {
 			System.err.println("错误的参数个数："+len+
-					"\n示例:NGramModel 语料文件路径  语料文件编码  n元长度  是否按句处理Y/N  平滑方法  模型文件输出路径  模型文件类型(text/binary/object)");
+					"\n示例:NGramModel 语料文件路径  语料文件编码  n元长度  是否按句处理Y/N  平滑方法  模型文件输出路径  模型文件类型(text/binary/object/arpa)");
 			System.exit(0);
 		}
 		
@@ -176,7 +176,7 @@ public class NGramLMTrain {
 			System.err.println("错误的n元长度："+args[2]+"\nn元长度为大于0的整数:");
 		}else if(!(sentence.equals("y") || sentence.equals("n"))) {
 			System.err.println("错误的语料处理方式："+args[3]+"\nY/y-以行为单位区分句子，N/n不区分句子");
-		}else if(!(type.equals("text") || type.equals("binary") || type.equals("object"))) {
+		}else if(!(type.equals("text") || type.equals("binary") || type.equals("object") || type.equals("arpa"))) {
 			System.err.println("错误的输出文件类型："+args[6]+"\ntext-文本文件, binary-二进制文件, object-序列化文件");
 		}else {
 			if(sentence.equals("y")) {

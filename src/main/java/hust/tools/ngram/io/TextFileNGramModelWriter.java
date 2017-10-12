@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import hust.tools.ngram.model.AbstractNGramModelWriter;
 import hust.tools.ngram.model.NGramLanguageModel;
 import hust.tools.ngram.utils.NGramModelEntry;
 
@@ -16,7 +17,7 @@ import hust.tools.ngram.utils.NGramModelEntry;
  *<li>Date: 2017年7月25日
  *</ul>
  */
-public class TextFileNGramModelWriter extends NGramModelWriter{
+public class TextFileNGramModelWriter extends AbstractNGramModelWriter{
 
 	private BufferedWriter bWriter;
 	

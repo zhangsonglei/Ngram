@@ -1,10 +1,8 @@
-package hust.tools.ngram.io;
+package hust.tools.ngram.model;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-import hust.tools.ngram.model.AbstractNGramModelWriter;
-import hust.tools.ngram.model.NGramLanguageModel;
 import hust.tools.ngram.utils.ARPAEntry;
 import hust.tools.ngram.utils.NGram;
 import hust.tools.ngram.utils.NGramModelEntry;
@@ -17,7 +15,7 @@ import hust.tools.ngram.utils.NGramModelEntry;
  *<li>Date: 2017年7月15日
  *</ul>
  */
-public abstract class ARPANGramModelWriter extends AbstractNGramModelWriter{
+public abstract class AbstractARPANGramModelWriter extends AbstractNGramModelWriter {
 	
 	private int n;
 	
@@ -25,7 +23,7 @@ public abstract class ARPANGramModelWriter extends AbstractNGramModelWriter{
 	
 	private NGram[][] nGramTypes;	
 	
-	public ARPANGramModelWriter(NGramLanguageModel languageModel) {
+	public AbstractARPANGramModelWriter(NGramLanguageModel languageModel) {
 		n = languageModel.getOrder();
 		nGramLogProbability = languageModel.getnGramLogProbability();
 		
