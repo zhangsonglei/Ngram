@@ -186,6 +186,6 @@ public class NGramLMTrain {
 				GramStream stream = new StringGramStream(args[0], args[1]);
 				getModelFile(stream, order, args[4], args[5], type);
 			}
-		}		
+		}
 	}
 }
