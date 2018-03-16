@@ -146,7 +146,7 @@ public class InterpolationLanguageModelTrainer extends AbstractLanguageModelTrai
 				int n_count = 0;
 				double prob = 0.0;
 				if(1  == removednGram.length())
-					n_count	= nGramCounter.getNGramTypeCountByN(n);
+					n_count	= nGramCounter.getTotalNGramCountByN(n);
 				else
 					n_count = nGramCounter.getNGramCount(removednGram.removeLast());
 

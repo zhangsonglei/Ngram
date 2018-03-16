@@ -251,7 +251,7 @@ public class NGramLanguageModel implements LanguageModel {
 					
 				NGram end = list.get(list.size() - 1);
 				if(end.length() == order)
-					list.add(end.removeFirst().addLast(PseudoWord.End));
+					list.add(end.addLast(PseudoWord.End).removeFirst());
 				else
 					list.add(end.addLast(PseudoWord.End));
 			}else {//序列长度小于order

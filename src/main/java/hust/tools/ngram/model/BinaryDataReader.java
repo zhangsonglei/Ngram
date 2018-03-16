@@ -56,11 +56,16 @@ public class BinaryDataReader implements DataReader{
 		
 		double log_prob = Double.parseDouble(strings[0]);
 		
-		String[] string_grams = strings[1].split("\\s+");
+		String[] string_grams = null;
+		if(strings.length > 1)
+			string_grams = strings[1].split("\\s+");
+		else
+			string_grams = new String[] {""};
+		
 		Gram[] grams = new Gram[string_grams.length];
-		for(int i = 0; i < grams.length; i++) {
+		for(int i = 0; i < grams.length; i++) 
 			grams[i] = new StringGram(string_grams[i]);
-		}
+		
 		NGram nGram = new NGram(grams); 
 		
 		if(strings.length > 2) {

@@ -25,8 +25,9 @@ public class StringGramStream extends AbstractGramStream {
 		List<Gram> list = new ArrayList<>();
 		
 		for(int i = 0; i < lines.size(); i++) {
-//			String line = lines.get(i).replaceAll("\\s+", "");
-			String[] strings = lines.get(i).split("\\s+");
+			String line = lines.get(i);
+			line = ToDBC(line).replaceAll("\\s", "");
+			String[] strings = line.split("");
 			
 			for(int j = 0; j < strings.length; j++) 
 				list.add(new StringGram(strings[j]));
