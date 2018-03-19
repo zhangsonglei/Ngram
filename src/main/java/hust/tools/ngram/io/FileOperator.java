@@ -26,7 +26,7 @@ public class FileOperator {
      * @param input String.
      * @return 半角字符串
      */
-    private static String ToDBC(String input) {
+    public static String ToDBC(String input) {
     	char c[] = input.toCharArray();
     	for (int i = 0; i < c.length; i++) {
     		if (c[i] == '\u3000') 

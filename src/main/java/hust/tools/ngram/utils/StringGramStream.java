@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import hust.tools.ngram.io.FileOperator;
+
 /**
  *<ul>
  *<li>Description: 流式读取String类型的元
@@ -26,7 +28,7 @@ public class StringGramStream extends AbstractGramStream {
 		
 		for(int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);
-			line = ToDBC(line).replaceAll("\\s", "");
+			line = FileOperator.ToDBC(line).replaceAll("\\s", "");
 			String[] strings = line.split("");
 			
 			for(int j = 0; j < strings.length; j++) 

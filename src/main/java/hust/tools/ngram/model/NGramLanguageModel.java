@@ -263,7 +263,7 @@ public class NGramLanguageModel implements LanguageModel {
 				
 				NGram end = list.get(0);
 				if(end.length() == order)
-					list.add(end.removeFirst().addLast(PseudoWord.End));
+					list.add(end.addLast(PseudoWord.End).removeFirst());
 				else
 					list.add(end.addLast(PseudoWord.End));
 			}
